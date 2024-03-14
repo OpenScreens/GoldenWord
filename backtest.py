@@ -24,9 +24,7 @@ def process_msg(msg,chatid,frontend):
 	respond_msg(response,chatid,frontend)
 
 def respond_msg(response,chatid,frontend):
-    if frontend == "telegram":
-	#sending output response.
-        requests.post(front_url,data={"response":response,"chatid":chatid})
+	requests.post(front_url,data={"response":response,"chatid":chatid})
 
 
 
