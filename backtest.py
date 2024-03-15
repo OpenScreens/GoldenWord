@@ -3,7 +3,6 @@ import requests
 import urllib.parse
 import socketserver
 front_url = "http://localhost:4999"
-import time
 
 
 
@@ -50,7 +49,6 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 		self.wfile.write(response_content)
 		# Post-response processing: Log something to a file
-		time.sleep(5)
 		print(post_params)
 		chatid = post_params["chatid"][0]
 		message = post_params["message"][0]
