@@ -1,7 +1,6 @@
 import http.server
 import urllib.parse
 import socketserver
-import ssl
 import http.client
 import json
 import time
@@ -27,18 +26,21 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		print(decoded_data)
 		time.sleep(7)
 
+        #Open connection to MercadoLibre
 		conn = http.client.HTTPSConnection("api.mercadolibre.com")
 		headers = {
 			'Authorization': 'Bearer APP_USR-7875887431713058-031808-ef5082b3d59843e9d516fa7962914bfd-1726462588'
 		}
 
 		try:
+            #Get unread messages
 			conn.request("GET", "/messages/unread?role=seller&tag=post_sale", headers=headers)
 			res = conn.getresponse()
 			data = res.read()
 			datar = json.loads(data)
 			print(datar['results'][0]['resource'])
 
+            #Get message by id
 			conn.request("GET", f"/messages{datar['results'][0]['resource']}?tag=post_sale", headers=headers)
 			res = conn.getresponse()
 			data = res.read()
@@ -46,6 +48,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			message = datarr['messages'][0]['text']
 			print(message)
 			
+            #if message is ping respond with pong
 			if (message == "ping"):
 				payload = json.dumps({
 					"from": {
@@ -67,12 +70,13 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 					"text": "Error"
 				})
 	
-
+            #Send message to buyer
 			headers['Content-Type'] = 'application/json'
 			conn.request("POST", f"/messages{datar['results'][0]['resource']}?tag=post_sale", payload, headers)
 			resv = conn.getresponse()
 			datav = resv.read().decode("utf-8")
 
+            #Mark message as read
 			payload = ''
 			conn.request("GET", "/messages/packs/2000007820894242/sellers/1726462588?tag=post_sale", payload, headers)
 			resl = conn.getresponse()
