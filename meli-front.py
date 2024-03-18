@@ -2,6 +2,9 @@ import http.server
 import urllib.parse
 import socketserver
 import ssl
+import http.client
+import json
+import time
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 	"""Handle requests in a separate thread."""
@@ -9,53 +12,80 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 	def do_POST(self):
-		print("received post")
-		self.send_response(200)
-  
-		# Send headers
+		print("Received POST request")
 		self.send_header('Content-type', 'application/json')
 		self.send_header('Connection', 'close')
-		content_length = int(self.headers['Content-Length'])
-  
-		# Read and decode the request body
-		post_data = self.rfile.read(content_length).decode('utf-8')
-		# Assuming the content type is application/x-www-form-urlencoded
-		# Parse the query string into a dictionary
-		post_params = urllib.parse.parse_qs(post_data)
-		# Send the response content
-		response_content = b"Received response. Sending to messaging app."
-		self.send_header("Content-length",len(response_content))
+		self.send_response(200)
 		self.end_headers()
 
-		self.wfile.write(response_content)
-		# Post-response processing: Log something to a file
-		print(post_params)
-  
-		resourceid = post_params["_id"][0]
-		print (resourceid)
-  
+		content_length = int(self.headers['Content-Length'])
+		post_data = self.rfile.read(content_length)
+		post_params = urllib.parse.parse_qs(post_data)
+
+		decoded_data = post_data.decode('utf-8')
+		print("Notification received:")
+		print(decoded_data)
+		time.sleep(7)
+
 		conn = http.client.HTTPSConnection("api.mercadolibre.com")
-		payload = ''
 		headers = {
-		'Authorization': 'Bearer APP_USR-3866013582804370-031511-3958dd20424e5e5c8e00d8a378bc39e0-1726462588'
+			'Authorization': 'Bearer APP_USR-7875887431713058-031808-ef5082b3d59843e9d516fa7962914bfd-1726462588'
 		}
-		conn.request("GET", f"/messages/{resourceid}", payload, headers)
-		res = conn.getresponse()
-		data = res.read()
-		print(data.decode("utf-8"))
-  
-		# with open("chat"+chatid+".txt", "a") as chat_file:
-		# 	chat_file.write(message+"\r\n")
+
+		try:
+			conn.request("GET", "/messages/unread?role=seller&tag=post_sale", headers=headers)
+			res = conn.getresponse()
+			data = res.read()
+			datar = json.loads(data)
+			print(datar['results'][0]['resource'])
+
+			conn.request("GET", f"/messages{datar['results'][0]['resource']}?tag=post_sale", headers=headers)
+			res = conn.getresponse()
+			data = res.read()
+			datarr = json.loads(data)
+			message = datarr['messages'][0]['text']
+			print(message)
+			
+			if (message == "ping"):
+				payload = json.dumps({
+					"from": {
+						"user_id": 1726462588
+					},
+					"to": {
+						"user_id": 1724090395
+					},
+					"text": "Pong"
+				})
+			else:
+				payload = json.dumps({
+					"from": {
+						"user_id": 1726462588
+					},
+					"to": {
+						"user_id": 1724090395
+					},
+					"text": "Error"
+				})
+	
+
+			headers['Content-Type'] = 'application/json'
+			conn.request("POST", f"/messages{datar['results'][0]['resource']}?tag=post_sale", payload, headers)
+			resv = conn.getresponse()
+			datav = resv.read().decode("utf-8")
+
+			payload = ''
+			conn.request("GET", "/messages/packs/2000007820894242/sellers/1726462588?tag=post_sale", payload, headers)
+			resl = conn.getresponse()
+			datal = resl.read().decode("utf-8")
+		
+		except (http.client.HTTPException, json.decoder.JSONDecodeError) as e:
+			print(f"Error: {e}")
+		finally:
+			conn.close()
+			return;
 
 if __name__ == '__main__':
-	server_address = ('0.0.0.0', 5000)  # Serve on localhost, port 5000
+	server_address = ('0.0.0.0', 5000)
 	httpd = ThreadedHTTPServer(server_address, SimpleHTTPRequestHandler)
-	httpd.socket = ssl.wrap_socket(httpd.socket, keyfile='key.pem', certfile='cert.pem', server_side=True)
-	print("Serving HTTPS on port 5000..")
+	print("Serving HTTP on port 5000..")
 	httpd.serve_forever()
-
-# if __name__ == '__main__':
-# 	server_address = ('0.0.0.0', 5000)  # Serve on all addresses, port 5000
-# 	httpd = http.server.HTTPServer(server_address, SimpleHTTPRequestHandler)
-# 	print("Serving HTTP on port 5000..")
-# 	httpd.serve_forever()
