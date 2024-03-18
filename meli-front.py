@@ -56,15 +56,16 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 				"message": messageGET,
 				"from": userfrom,
 				"to": userto,
-				"idpack": idpack  
+				"chatid": idpack,
+				"frontend": "mercadolibre"
 			}]
    
 			body = json.dumps(messagejson)
-			backend = http.client.HTTPSConnection("meli.goldenwordai.com", 4999)
+			backend = http.client.HTTPSConnection("meli.goldenwordai.com", 4998)
 			backend.request("POST", "/", body, headers)
 			resv = backend.getresponse()
 			datav = resv.read().decode("utf-8")
-			print(datav)  # Imprime la respuesta del servidor   
+			print("###2 Message sent: " + datav)  # Imprime la respuesta del servidor   
    
 		except (http.client.HTTPException, json.decoder.JSONDecodeError) as e:
 			print(f"Error: {e}")
