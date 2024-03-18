@@ -1,6 +1,7 @@
 import http.server
 import urllib.parse
 import socketserver
+import ssl
 import http.client
 import json
 import time
@@ -9,6 +10,13 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 	"""Handle requests in a separate thread."""
 
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
+
+	def do_GET(self):
+	    if self.path == '/':
+        	self.send_response(200)
+	        self.send_header('Content-type', 'text/plain')
+        	self.end_headers()
+	        self.wfile.write(b'Mercado Libre BOT running')
 
 	def do_POST(self):
 		print("Received POST request")
@@ -29,7 +37,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         #Open connection to MercadoLibre
 		conn = http.client.HTTPSConnection("api.mercadolibre.com")
 		headers = {
-			'Authorization': 'Bearer APP_USR-7875887431713058-031808-ef5082b3d59843e9d516fa7962914bfd-1726462588'
+			'Authorization': 'Bearer APP_USR-7875887431713058-031816-1c3bc3a915779f270165a76749cf0fa5-1726462588'
 		}
 
 		try:
@@ -68,20 +76,18 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 						"user_id": 1724090395
 					},
 					"text": "Error"
-				})
-	
-            #Send message to buyer
+				})	
+
 			headers['Content-Type'] = 'application/json'
 			conn.request("POST", f"/messages{datar['results'][0]['resource']}?tag=post_sale", payload, headers)
 			resv = conn.getresponse()
 			datav = resv.read().decode("utf-8")
 
-            #Mark message as read
 			payload = ''
 			conn.request("GET", "/messages/packs/2000007820894242/sellers/1726462588?tag=post_sale", payload, headers)
 			resl = conn.getresponse()
 			datal = resl.read().decode("utf-8")
-		
+   
 		except (http.client.HTTPException, json.decoder.JSONDecodeError) as e:
 			print(f"Error: {e}")
 		finally:
