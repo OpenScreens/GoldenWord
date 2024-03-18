@@ -41,51 +41,30 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 		try:
 			#Get unread messages
-			conn.request("GET", "/messages/unread?role=seller&tag=post_sale", headers=headers)
+			conn.request("GET", f"/messages/{decoded_data['resource']}?tag=post_sale", headers=headers)
 			res = conn.getresponse()
 			data = res.read()
-			datar = json.loads(data)
-			print(datar['results'][0]['resource'])
-
-			#Get message by id
-			conn.request("GET", f"/messages{datar['results'][0]['resource']}?tag=post_sale", headers=headers)
-			res = conn.getresponse()
-			data = res.read()
-			datarr = json.loads(data)
-			message = datarr['messages'][0]['text']
-			print(message)
-			
-			#if message is ping respond with pong
-			if (message == "ping"):
-				payload = json.dumps({
-					"from": {
-						"user_id": 1726462588
-					},
-					"to": {
-						"user_id": 1724090395
-					},
-					"text": "Pong"
-				})
-			else:
-				payload = json.dumps({
-					"from": {
-						"user_id": 1726462588
-					},
-					"to": {
-						"user_id": 1724090395
-					},
-					"text": "Error"
-				})	
-
-			headers['Content-Type'] = 'application/json'
-			conn.request("POST", f"/messages{datar['results'][0]['resource']}?tag=post_sale", payload, headers)
-			resv = conn.getresponse()
+			data_message = json.loads(data)
+			messageGET = (data_message['messages'][0]['text']).replace("\n", "")
+			userfrom = (data_message['messages'][0]['from']['user_id'])
+			userto = data_message['messages'][0]['to']['user_id']
+			idpack = data_message['messages'][0]['message_resources']['id']
+   
+			print("###1 Message received: " + messageGET)
+   
+			messagejson=[{
+				"message": messageGET,
+				"from": userfrom,
+				"to": userto,
+				"idpack": idpack  
+			}]
+   
+			body = json.dumps(messagejson)
+			backend = http.client.HTTPSConnection("meli.goldenwordai.com", 4999)
+			backend.request("POST", "/", body, headers)
+			resv = backend.getresponse()
 			datav = resv.read().decode("utf-8")
-
-			payload = ''
-			conn.request("GET", "/messages/packs/2000007820894242/sellers/1726462588?tag=post_sale", payload, headers)
-			resl = conn.getresponse()
-			datal = resl.read().decode("utf-8")
+			print(datav)  # Imprime la respuesta del servidor   
    
 		except (http.client.HTTPException, json.decoder.JSONDecodeError) as e:
 			print(f"Error: {e}")
