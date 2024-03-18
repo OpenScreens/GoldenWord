@@ -1,7 +1,6 @@
 import http.server
 import urllib.parse
 import socketserver
-import ssl
 import http.client
 import json
 import time
@@ -12,11 +11,11 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 	def do_GET(self):
-	    if self.path == '/':
-        	self.send_response(200)
-	        self.send_header('Content-type', 'text/plain')
-        	self.end_headers()
-	        self.wfile.write(b'Mercado Libre BOT running')
+		if self.path == '/':
+			self.send_response(200)
+			self.send_header('Content-type', 'text/plain')
+			self.end_headers()
+			self.wfile.write(b'Mercado Libre BOT running')
 
 	def do_POST(self):
 		print("Received POST request")
@@ -34,21 +33,21 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		print(decoded_data)
 		time.sleep(7)
 
-        #Open connection to MercadoLibre
+		#Open connection to MercadoLibre
 		conn = http.client.HTTPSConnection("api.mercadolibre.com")
 		headers = {
 			'Authorization': 'Bearer APP_USR-7875887431713058-031816-1c3bc3a915779f270165a76749cf0fa5-1726462588'
 		}
 
 		try:
-            #Get unread messages
+			#Get unread messages
 			conn.request("GET", "/messages/unread?role=seller&tag=post_sale", headers=headers)
 			res = conn.getresponse()
 			data = res.read()
 			datar = json.loads(data)
 			print(datar['results'][0]['resource'])
 
-            #Get message by id
+			#Get message by id
 			conn.request("GET", f"/messages{datar['results'][0]['resource']}?tag=post_sale", headers=headers)
 			res = conn.getresponse()
 			data = res.read()
@@ -56,7 +55,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			message = datarr['messages'][0]['text']
 			print(message)
 			
-            #if message is ping respond with pong
+			#if message is ping respond with pong
 			if (message == "ping"):
 				payload = json.dumps({
 					"from": {
