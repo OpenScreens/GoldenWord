@@ -39,35 +39,35 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		decoded_data = json.loads(data)
 		resource = decoded_data.get('resource')
   
-		# ti_m = os.path.getmtime(path)
-		# timefile = datetime.utcfromtimestamp(ti_m)
-		# timefile = timefile.replace(tzinfo=timezone.utc)
-		# diferencia_tiempo = fecha_hora_actual - timefile
-		# min_time = timedelta(hours=6)
-		# print(timefile)
+		ti_m = os.path.getmtime(path)
+		timefile = datetime.utcfromtimestamp(ti_m)
+		timefile = timefile.replace(tzinfo=timezone.utc)
+		diferencia_tiempo = fecha_hora_actual - timefile
+		min_time = timedelta(hours=6)
+		meli_token = 'APP_USR-7875887431713058-031908-780b840ce28d951dc89cd01717640261-1726462588'
 
-		# if diferencia_tiempo >= min_time:
-		# 	print("Han pasado al menos 6 horas. Se realiza el post." + str(timefile) + str(fecha_hora_actual))
-		# 	payload = 'grant_type=refresh_token&client_id=7875887431713058&client_secret=SZU8d3beJhUAJnw3ezsZflgtD6w3JpLD&refresh_token=TG-65f83a97c20ab30001f99f40-1726462588'
-		# 	headers = {
-		# 	'accept': 'application/json',
-		# 	'content-type': 'application/x-www-form-urlencoded'
-		# 	}
-		# 	conn.request("POST", "/oauth/token", payload, headers)
-		# 	res = conn.getresponse()
-		# 	data = res.read()
-		# 	print(data.decode("utf-8"))
-		# 	f = open("timeauth.txt", "w")
-		# 	f.write(timefile)
-		# 	f.close()
-		# else:
-		# 	print("Aún no han pasado 6 horas desde el timestamp. No se realiza ninguna acción " + str(timefile) + str(fecha_hora_actual))
+		if diferencia_tiempo >= min_time:
+			print("Han pasado al menos 6 horas. Se realiza el post." + str(timefile) + str(fecha_hora_actual))
+			payload = 'grant_type=refresh_token&client_id=7875887431713058&client_secret=SZU8d3beJhUAJnw3ezsZflgtD6w3JpLD&refresh_token=TG-65f83a97c20ab30001f99f40-1726462588'
+			headers = {
+			'accept': 'application/json',
+			'content-type': 'application/x-www-form-urlencoded'
+			}
+			conn.request("POST", "/oauth/token", payload, headers)
+			res = conn.getresponse()
+			data = res.read().decode("utf-8")
+			response_data = json.loads(data)
+			meli_token = response_data.get('access_token')
+			with open("timeauth.txt", "w") as f:
+				f.write(str(timefile))
+		else:
+			print("Aún no han pasado 6 horas desde el timestamp. No se realiza ninguna acción " + str(timefile) + str(fecha_hora_actual))
 
 
 		#Open connection to MercadoLibre
 		conn = http.client.HTTPSConnection("api.mercadolibre.com")
 		headers = {
-			'Authorization': 'Bearer APP_USR-7875887431713058-031908-780b840ce28d951dc89cd01717640261-1726462588'
+			'Authorization': f'Bearer {meli_token}'
 		}
 
 		#Get unread messages
