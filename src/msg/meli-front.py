@@ -23,7 +23,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			self.wfile.write(b'Mercado Libre BOT running')
 
 	def do_POST(self):
-		if self.path == '/ida':
+		if self.path == '/notification':
 			print("Received POST request")
 			self.send_header('Content-type', 'application/json')
 			self.send_header('Connection', 'close')
@@ -46,8 +46,10 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			diferencia_tiempo = fecha_hora_actual - timefile
 			min_time = timedelta(hours=6)
 			meli_token = 'APP_USR-7875887431713058-031908-780b840ce28d951dc89cd01717640261-1726462588'
-
+			conn = http.client.HTTPSConnection("api.mercadolibre.com")
+   
 			if diferencia_tiempo >= min_time:
+
 				print("Han pasado al menos 6 horas. Se realiza el post." + str(timefile) + str(fecha_hora_actual))
 				payload = 'grant_type=refresh_token&client_id=7875887431713058&client_secret=SZU8d3beJhUAJnw3ezsZflgtD6w3JpLD&refresh_token=TG-65f83a97c20ab30001f99f40-1726462588'
 				headers = {
@@ -58,15 +60,17 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 				res = conn.getresponse()
 				data = res.read().decode("utf-8")
 				response_data = json.loads(data)
-				meli_token = response_data.get('access_token')
+				meli_tokenn = response_data.get('access_token')
 				with open("timeauth.txt", "w") as f:
-					f.write(str(timefile))
+					f.write(str(meli_tokenn))
 			else:
 				print("Aún no han pasado 6 horas desde el timestamp. No se realiza ninguna acción " + str(timefile) + str(fecha_hora_actual))
 
-
+			with open('timeauth.txt', 'r') as f:
+				lines = f.readlines()
+				meli_token = lines[-1]
+   
 			#Open connection to MercadoLibre
-			conn = http.client.HTTPSConnection("api.mercadolibre.com")
 			headers = {
 				'Authorization': f'Bearer {meli_token}'
 			}
@@ -92,15 +96,15 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 				"frontend": "mercadolibre"
 			}]
 	
-			print(messagejson)
+		print(messagejson)
+		body = json.dumps(messagejson)
+		backend = http.client.HTTPSConnection("meli.goldenwordai.com", 4998)
+		backend.request("POST", "/", body, headers)
+		resv = backend.getresponse()
+		datav = resv.read().decode("utf-8")
+		datav_message = json.loads(datav)
+		response = datav_message['response']
 		if self.path == '/vuelta':
-			body = json.dumps(messagejson)
-			backend = http.client.HTTPSConnection("https://meli.goldenwordai.com", 4998)
-			backend.request("POST", "/", body, headers)
-			resv = backend.getresponse()
-			datav = resv.read().decode("utf-8")
-			datav_message = json.loads(datav)
-			response = datav_message['response']
 			print("###2 Message sent: " + response)
   
 			payload = json.dumps({
