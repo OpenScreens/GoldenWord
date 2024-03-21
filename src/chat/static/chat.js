@@ -41,11 +41,12 @@ function longPoll() {
             json.forEach(obj => {
 				sendResponse(obj.message);
             });
-            setTimeout(longPoll, 10000);
         })
-		2
         .catch(error => {
             console.error(error);
+            setTimeout(longPoll, 10000);
+        })
+		.finally(() => {
             setTimeout(longPoll, 10000);
         });
 	}
