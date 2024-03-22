@@ -17,19 +17,20 @@ function sendMessage() {
 		appendMessage("sender", message);
 		messageInput.value = "";
 		var response = "";
-		longPoll(); 
 		
 		// if (message.includes("me llamo")) {
-		//     var name = message.split("me llamo")[1].trim();
-		//     response = "Hola " + capitalizeFirstLetter(name);
-		// } else {
-		//     message === "ping" ? response = "pong" : message === "pong" ? response = "ping" :   
-		//     response = responses[message] || "Lo siento, no entendí. ¿Podrías reformular tu pregunta?";
-		// }
-	}
+			//     var name = message.split("me llamo")[1].trim();
+			//     response = "Hola " + capitalizeFirstLetter(name);
+			// } else {
+				//     message === "ping" ? response = "pong" : message === "pong" ? response = "ping" :   
+				//     response = responses[message] || "Lo siento, no entendí. ¿Podrías reformular tu pregunta?";
+				// }
+			}
 }
 
-function longPoll() {
+Poll(); 
+
+function Poll() {
     const requestOptions = {
         method: "GET",
         redirect: "follow"
@@ -44,10 +45,10 @@ function longPoll() {
         })
         .catch(error => {
             console.error(error);
-            setTimeout(longPoll, 10000);
+            setTimeout(Poll, 10000);
         })
 		.finally(() => {
-            setTimeout(longPoll, 10000);
+            setTimeout(Poll, 10000);
         });
 	}
 
