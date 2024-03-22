@@ -8,7 +8,7 @@
 3. Abrir otra terminal y ir al directorio `src/biz` usando `cd ./src/biz`.
 4. Ejecutar el siguiente comando para iniciar el backend PingPong en el puerto `4998`:
     ```
-    python pingpong-backend.py
+    python ping-pong-backend.py
     ```
 5. Por ultimo, abrir el HTML ubicado en `/chat/chat.html` para interactuar con el chat.
 
