@@ -1,5 +1,14 @@
-1- python3 frontest.py (u otro frontend)
-2- python3 backtest.py (u otro backend)
-3- python3 frontest2.py (o enviar mensaje de prueba x mensajería a frontend)
+# Instrucciones para ejecutar el Chat y el Backend PingPong
 
-![image](https://github.com/TomFromOSIT/GoldenWord/assets/77340598/caa9d7e0-673a-4760-a179-d8fa240a4144)
+1. Ir al directorio `src/msg` utilizando el comando `cd ./src/msg`.
+2. Ejecutar el siguiente comando para iniciar el servidor del chat en el puerto `5000`:
+    ```
+    python chat.py
+    ```
+3. Abrir otra terminal y ir al directorio `src/biz` usando `cd ./src/biz`.
+4. Ejecutar el siguiente comando para iniciar el backend PingPong en el puerto `4998`:
+    ```
+    python ping-pong-backend.py
+    ```
+5. Por ultimo, abrir el HTML ubicado en `/msg/chat/chat.html` para interactuar con el chat.
+
