@@ -1,12 +1,8 @@
 import json
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, request
 import requests
 
 app = Flask(__name__)
-
-@app.route('/')
-def index():
-	return render_template('chat.html')
 
 @app.route('/msg', methods=['GET'])
 def msg():
