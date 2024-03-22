@@ -26,8 +26,8 @@ function sendMessage() {
 				//     response = responses[message] || "Lo siento, no entendí. ¿Podrías reformular tu pregunta?";
 				// }
 			}
-			Poll(); 
 		}
+Poll(); 
 		
 //
 function Poll() {
@@ -42,12 +42,6 @@ function Poll() {
 			var value = text.split('=')[1].split('&')[0];
 			sendResponse(value);
 		})
-        //.then(response => response.json())) 
-        // .then(json => {
-        //     json.forEach(obj => {
-		// 		sendResponse(obj.message);
-        //     });
-        // })
         .catch(error => {
             console.error(error);
             setTimeout(Poll, 10000);
@@ -57,12 +51,10 @@ function Poll() {
         });
 	}
 
-
 function sendResponse(message) {
 	var chatMessages = document.getElementById("chat-messages");
 	appendMessage("receiver", message);
 }
-
 
 function appendMessage(type, message) {
 	var chatMessages = document.getElementById("chat-messages");
@@ -81,7 +73,6 @@ function addEnterKeyListener() {
 		}
 	});
 }
-
 
 addEnterKeyListener();
 
