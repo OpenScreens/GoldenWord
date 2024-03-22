@@ -10,5 +10,5 @@
     ```
     python ping-pong-backend.py
     ```
-5. Por ultimo, abrir el HTML ubicado en `/chat/chat.html` para interactuar con el chat.
+5. Por ultimo, abrir el HTML ubicado en `/msg/chat/chat.html` para interactuar con el chat.
 
