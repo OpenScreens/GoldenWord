@@ -26,10 +26,10 @@ function sendMessage() {
 				//     response = responses[message] || "Lo siento, no entendí. ¿Podrías reformular tu pregunta?";
 				// }
 			}
-}
-
-Poll(); 
-
+			Poll(); 
+		}
+		
+//
 function Poll() {
     const requestOptions = {
         method: "GET",
@@ -37,12 +37,17 @@ function Poll() {
     };
 
     fetch("http://127.0.0.1:5000/msg", requestOptions)
-        .then(response => response.json()) 
-        .then(json => {
-            json.forEach(obj => {
-				sendResponse(obj.message);
-            });
-        })
+		.then(response => response.text()) 
+		.then(text => {
+			var value = text.split('=')[1].split('&')[0];
+			sendResponse(value);
+		})
+        //.then(response => response.json())) 
+        // .then(json => {
+        //     json.forEach(obj => {
+		// 		sendResponse(obj.message);
+        //     });
+        // })
         .catch(error => {
             console.error(error);
             setTimeout(Poll, 10000);
