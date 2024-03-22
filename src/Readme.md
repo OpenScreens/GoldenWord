@@ -1,9 +1,13 @@
 # subsistemas
 Información sobre cada subsistema/objeto/microservicio en la infraestructura. Como identificar a cada uno, su proposito, y ejemplos.
-## client: programa/codigo que se ejecuta en el dispositivo del usuario. La mayoría son controlados por terceros (Ejemplo Discord, Telegram, algun React frontend)
-## msg 3ero: Servidor HTTP controlado por terceros que conecta cliente con otros backends, ejemplo (servidor de Discord API server o Telegram API server)
-## msg: Servidor HTTP, único proposito es intermediar entre client con biz, hay uno por cada client (ejemplo Disco o Telegrama)
-## biz: Servidor HTTP, contiene logica de negocio. (ejemplo Ping Pong, Poker Pal)
+## client
+programa/codigo que se ejecuta en el dispositivo del usuario. La mayoría son controlados por terceros (Ejemplo Discord, Telegram, algun React frontend)
+## msg 3ero
+Servidor HTTP controlado por terceros que conecta cliente con otros backends, ejemplo (servidor de Discord API server o Telegram API server)
+## msg
+Servidor HTTP, único proposito es intermediar entre client con biz, hay uno por cada client (ejemplo Disco o Telegrama)
+## biz
+Servidor HTTP, contiene logica de negocio. (ejemplo Ping Pong, Poker Pal)
 
 
 # Conexiones
