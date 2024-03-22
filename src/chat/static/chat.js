@@ -27,7 +27,7 @@ function sendMessage() {
 				// }
 			}
 		}
-Poll(); 
+
 		
 //
 function Poll() {
@@ -44,10 +44,7 @@ function Poll() {
 		})
         .catch(error => {
             console.error(error);
-            setTimeout(Poll, 10000);
-        })
-		.finally(() => {
-            setTimeout(Poll, 10000);
+            
         });
 	}
 
@@ -79,3 +76,4 @@ addEnterKeyListener();
 document.getElementById("send-button").addEventListener("click", function() {
 	sendMessage();
 });
+setTimeout(Poll, 10000);
