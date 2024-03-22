@@ -26,6 +26,7 @@ function sendMessage() {
 				//     response = responses[message] || "Lo siento, no entendí. ¿Podrías reformular tu pregunta?";
 				// }
 			}
+			Poll()
 		}
 
 		
@@ -76,4 +77,7 @@ addEnterKeyListener();
 document.getElementById("send-button").addEventListener("click", function() {
 	sendMessage();
 });
-setTimeout(Poll, 10000);
+
+for (i=0; i < 10; i++){
+	setTimeout(Poll, 10000);
+}
