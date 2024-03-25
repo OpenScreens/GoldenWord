@@ -34,10 +34,11 @@ function sendMessage() {
 function Poll() {
     const requestOptions = {
         method: "GET",
-        redirect: "follow"
+        redirect: "follow",
+	mode: "no-cors"
     };
 
-    fetch("http://127.0.0.1:5000/msg", requestOptions)
+    fetch("http://localhost:5000/msg", requestOptions)
 		.then(response => response.text()) 
 		.then(text => {
 			var value = text.split('=')[1].split('&')[0];
