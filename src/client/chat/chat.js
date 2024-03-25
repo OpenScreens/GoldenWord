@@ -34,8 +34,7 @@ function sendMessage() {
 function Poll() {
     const requestOptions = {
         method: "GET",
-        redirect: "follow",
-	mode: "no-cors"
+        redirect: "follow"
     };
 
     fetch("http://localhost:5000/msg", requestOptions)
@@ -79,6 +78,4 @@ document.getElementById("send-button").addEventListener("click", function() {
 	sendMessage();
 });
 
-for (i=0; i < 10; i++){
-	setTimeout(Poll, 10000);
-}
+setInterval(Poll, 10000);
