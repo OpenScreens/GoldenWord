@@ -2,6 +2,10 @@ import flask
 import requests
 app = flask.Flask(__name__)
 
+@app.route('/', methods=['GET'])
+def hello():
+    return("Running at port 4998")
+
 @app.route('/', methods=['POST'])
 def index():
 	json_data = flask.request.json
@@ -18,6 +22,8 @@ def index():
 		frontend_url = "https://meli.goldenwordai.com:5000/vuelta"
 	elif frontend == "chatpage":
 		frontend_url = "http://localhost:5000/"
+	elif frontend == "react":
+			frontend_url = "http://bff.test.goldenwordai.com"
 	else:
 		return "No frontend url", 400
 	
