@@ -4,6 +4,18 @@ import requests
 
 app = Flask(__name__)
 
+# Define a function to add CORS headers to responses
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, PUT, DELETE'
+    response.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept'
+    return response
+
+# Apply the CORS headers to all routes using a Flask decorator
+@app.after_request
+def after_request(response):
+    return add_cors_headers(response)
+
 @app.route('/msg', methods=['GET'])
 def msg():
 	url = "http://127.0.0.1:4998"
