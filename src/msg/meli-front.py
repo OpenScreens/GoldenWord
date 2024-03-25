@@ -23,6 +23,9 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			self.wfile.write(b'Mercado Libre BOT running')
 
 	def do_POST(self):
+		if self.path == "/":
+			self.send_response(404)
+			self.end_headers()
 		if self.path == '/notification':
 			print("Received POST request")
 			self.send_header('Content-type', 'application/json')
@@ -94,24 +97,28 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 				"chatid": idpack,
 				"frontend": "mercadolibre"
 			}]
-	
-		print(messagejson)
-		body = json.dumps(messagejson)
-		backend = http.client.HTTPSConnection("meli.goldenwordai.com", 4998)
-		backend.request("POST", "/", body, headers)
-		resv = backend.getresponse()
-		datav = resv.read().decode("utf-8")
-		datav_message = json.loads(datav)
-		response = datav_message['response']
-		self.send_response(301)  
-		self.send_header('Location', '/vuelta') 
-		self.end_headers()
-		if self.path == '/vuelta':
+			print(messagejson)
+			body = json.dumps(messagejson)
+			backend = http.client.HTTPSConnection("meli.goldenwordai.com", 4998)
+			backend.request("POST", "/", body, headers)
+			resv = backend.getresponse()
+			datav = resv.read().decode("utf-8")
+			datav_message = json.loads(datav)
+			response = datav_message['response']
+			#if status code 200 y listo
+
+		#def vuelta(self)
+		elif self.path == '/vuelta':
 			self.send_response(200)
 			self.send_header('Content-type', 'application/json')
 			self.end_headers()
 			print("###2 Message sent: " + response)
-  
+			
+			content_length = int(self.headers['Content-Length'])
+			post_data = self.rfile.read(content_length)
+			post_params = urllib.parse.parse_qs(post_data)
+			respuesta_de_comerciante = json.loads(post_params.decode("utf-8"))
+			
 			payload = json.dumps({
 				"from": {
 					"user_id": userto
@@ -126,6 +133,9 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			conn.request("POST", f"/messages/packs/{idpack}/sellers/{userto}?tag=post_sale", payload, headers)
 			resv = conn.getresponse()
 			datav = resv.read().decode("utf-8")
+			messages
+				message["message"]
+				message["chatid"]
 			conn.close()
 
 if __name__ == '__main__':
