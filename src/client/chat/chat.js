@@ -10,7 +10,7 @@ function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function sendMessage() {
+function processUserInput() {
 	var messageInput = document.getElementById("message-input");
 	var message = messageInput.value.trim().toLowerCase(); 
 	if (message !== "") {
@@ -26,12 +26,11 @@ function sendMessage() {
 				//     response = responses[message] || "Lo siento, no entendí. ¿Podrías reformular tu pregunta?";
 				// }
 			}
-			Poll()
 		}
 
 		
 //
-function Poll() {
+function retrieveServerMessages() {
     const requestOptions = {
         method: "GET",
         redirect: "follow"
@@ -41,7 +40,7 @@ function Poll() {
 		.then(response => response.text()) 
 		.then(text => {
 			var value = text.split('=')[1].split('&')[0];
-			sendResponse(value);
+			displayResponse(value);
 		})
         .catch(error => {
             console.error(error);
@@ -49,7 +48,7 @@ function Poll() {
         });
 	}
 
-function sendResponse(message) {
+function displayResponse(message) {
 	var chatMessages = document.getElementById("chat-messages");
 	appendMessage("receiver", message);
 }
@@ -67,7 +66,7 @@ function addEnterKeyListener() {
 	document.getElementById("message-input").addEventListener("keyup", function(event) {
 		if (event.keyCode === 13) {
 			event.preventDefault();
-			sendMessage();
+			processUserInput();
 		}
 	});
 }
@@ -75,7 +74,7 @@ function addEnterKeyListener() {
 addEnterKeyListener();
 
 document.getElementById("send-button").addEventListener("click", function() {
-	sendMessage();
+	processUserInput();
 });
 
-setInterval(Poll, 10000);
+setInterval(retrieveServerMessages, 10000);
