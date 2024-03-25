@@ -45,7 +45,6 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			timefile = timefile.replace(tzinfo=timezone.utc)
 			diferencia_tiempo = fecha_hora_actual - timefile
 			min_time = timedelta(hours=6)
-			meli_token = 'APP_USR-7875887431713058-031908-780b840ce28d951dc89cd01717640261-1726462588'
 			conn = http.client.HTTPSConnection("api.mercadolibre.com")
    
 			if diferencia_tiempo >= min_time:
@@ -104,7 +103,13 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		datav = resv.read().decode("utf-8")
 		datav_message = json.loads(datav)
 		response = datav_message['response']
+		self.send_response(301)  
+		self.send_header('Location', '/vuelta') 
+		self.end_headers()
 		if self.path == '/vuelta':
+			self.send_response(200)
+			self.send_header('Content-type', 'application/json')
+			self.end_headers()
 			print("###2 Message sent: " + response)
   
 			payload = json.dumps({
