@@ -102,11 +102,14 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			backend = http.client.HTTPSConnection("pingpong.test.goldenwordai.com", 4998)
 			backend.request("POST", "/", body, headers)
 			resv = backend.getresponse()
+			datav = resv.read().decode("utf-8")
+			datav_message = json.loads(datav)
+			response = datav_message['response']
 			if (resv.status == 200):
-				print("###2 Message sent: " + messageGET)
+				print("PingPong 200")
 			else:
-				print("Problem server pingpong")
-				return
+				print("Problem server pingpong" + str(resv.status))
+				return;
 
 		#def vuelta(self)
 		elif self.path == '/vuelta':
