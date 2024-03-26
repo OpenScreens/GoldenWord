@@ -54,11 +54,11 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 				print("Han pasado al menos 6 horas. Se realiza el post." + str(timefile) + str(fecha_hora_actual))
 				payload = 'grant_type=refresh_token&client_id=7875887431713058&client_secret=SZU8d3beJhUAJnw3ezsZflgtD6w3JpLD&refresh_token=TG-65f83a97c20ab30001f99f40-1726462588'
-				headers = {
+				headerss = {
 				'accept': 'application/json',
 				'content-type': 'application/x-www-form-urlencoded'
 				}
-				conn.request("POST", "/oauth/token", payload, headers)
+				conn.request("POST", "/oauth/token", payload, headerss)
 				res = conn.getresponse()
 				data = res.read().decode("utf-8")
 				response_data = json.loads(data)
@@ -99,6 +99,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			}
 			print(messagejson)
 			body = json.dumps(messagejson)
+			headers['Content-Type'] = 'application/json'
 			backend = http.client.HTTPSConnection("pingpong.test.goldenwordai.com", 4998)
 			backend.request("POST", "/", body, headers)
 			resv = backend.getresponse()
