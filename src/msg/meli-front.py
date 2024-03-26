@@ -99,7 +99,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			}]
 			print(messagejson)
 			body = json.dumps(messagejson)
-			backend = http.client.HTTPSConnection("meli.goldenwordai.com", 4998)
+			backend = http.client.HTTPSConnection("pingpong.test.goldenwordai.com", 4998)
 			backend.request("POST", "/", body, headers)
 			resv = backend.getresponse()
 			datav = resv.read().decode("utf-8")
