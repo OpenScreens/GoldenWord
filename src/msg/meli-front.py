@@ -103,8 +103,6 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			backend.request("POST", "/", body, headers)
 			resv = backend.getresponse()
 			datav = resv.read().decode("utf-8")
-			datav_message = json.loads(datav)
-			response = datav_message['response']
 			if (resv.status == 200):
 				print("PingPong 200")
 			else:
@@ -119,9 +117,8 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			content_length = int(self.headers['Content-Length'])
 			post_data = self.rfile.read(content_length)
 			post_params = urllib.parse.parse_qs(post_data.decode("utf-8"))
-			post_params_dict = {key: value[0] for key, value in post_params.items()}
-			resource = post_params_dict.get('response')
-			print("###rst pingpong: " + str(post_params_dict))
+			resource = post_params.get('response', [''])[0]
+			print("###rst pingpong: " + str(post_params))
 			payload = json.dumps({
 				"from": {
 					"user_id": userto
