@@ -108,6 +108,10 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			datav = resv.read().decode("utf-8")
 			if (resv.status == 200):
 				print("PingPong 200")
+				self.send_response(301)
+				self.send_header('Content-type', 'application/json')
+				self.send_header('Location', '/vuelta')
+				self.end_headers()
 			else:
 				print("Problem server pingpong" + str(resv.status))
 				return;
