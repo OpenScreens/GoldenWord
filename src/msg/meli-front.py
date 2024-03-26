@@ -125,9 +125,9 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 				resv = conn.getresponse()
 				datav = resv.read().decode("utf-8")
 				headerst = {
-				'Authorization': f'Bearer {meli_token}'
+				'Authorization': f'Bearer {meli_token}'.encode('utf-8')
 				}
-				conn.request("GET", f"/messages/packs/{idpack}/sellers/{userto}?tag=post_sale", headerst)
+				conn.request("GET", f"/messages/packs/{idpack}/sellers/{userto}?tag=post_sale", headers=headerst)
 				res = conn.getresponse()
 				conn.close()
 			else:
