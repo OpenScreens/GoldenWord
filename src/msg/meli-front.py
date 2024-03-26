@@ -105,46 +105,33 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			backend = http.client.HTTPSConnection("pingpong.test.goldenwordai.com", 4998)
 			backend.request("POST", "/", body, headers)
 			resv = backend.getresponse()
-			datav = resv.read().decode("utf-8")
 			if (resv.status == 200):
 				print("PingPong 200")
-				self.send_response(301)
-				self.send_header('Content-type', 'application/json')
-				self.send_header('Location', '/vuelta')
-				self.end_headers()
+				datav = resv.read().decode("utf-8")
+				datav_message = json.loads(datav)
+				response = datav_message['response']
+				print("###2 Message sent: " + response)
+	
+				payload = json.dumps({
+					"from": {
+						"user_id": userto
+					},
+					"to": {
+						"user_id": userfrom
+					},
+					"text": response
+				})
+			
+				headers['Content-Type'] = 'application/json'
+				conn.request("POST", f"/messages/packs/{idpack}/sellers/{userto}?tag=post_sale", payload, headers)
+				resv = conn.getresponse()
+				datav = resv.read().decode("utf-8")
+				conn.close()
 			else:
 				print("Problem server pingpong" + str(resv.status))
 				return;
-
-		elif self.path == '/vuelta':
-			print("Received POST request VUELTA")
-		'''
-			self.send_response(200)
-			self.send_header('Content-type', 'application/json')
-			self.end_headers()
-			content_length = int(self.headers['Content-Length'])
-			post_data = self.rfile.read(content_length)
-			post_params = urllib.parse.parse_qs(post_data.decode("utf-8"))
-			resource = post_params.get('response', [''])[0]
-			print("###rst pingpong: " + str(post_params))
+			
    
-			payload = json.dumps({
-				"from": {
-					"user_id": userto
-				},
-				"to": {
-					"user_id": userfrom
-				},
-				"text": str(resource)
-			})
-		
-			headers['Content-Type'] = 'application/json'
-			conn.request("POST", f"/messages/packs/{idpack}/sellers/{userto}?tag=post_sale", payload, headers)
-			resv = conn.getresponse()
-			datav = resv.read().decode("utf-8")
-			conn.close()
-			'''
-
 if __name__ == '__main__':
 	server_address = ('0.0.0.0', 5000)
 	httpd = ThreadedHTTPServer(server_address, SimpleHTTPRequestHandler)
