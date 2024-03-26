@@ -124,7 +124,10 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 				conn.request("POST", f"/messages/packs/{idpack}/sellers/{userto}?tag=post_sale", payload, headers)
 				resv = conn.getresponse()
 				datav = resv.read().decode("utf-8")
-				conn.request("GET", f"/messages/packs/{idpack}/sellers/{userto}?tag=post_sale", headers)
+				headerst = {
+				'Authorization': f'Bearer {meli_token}'
+				}
+				conn.request("GET", f"/messages/packs/{idpack}/sellers/{userto}?tag=post_sale", headerst)
 				res = conn.getresponse()
 				conn.close()
 			else:
