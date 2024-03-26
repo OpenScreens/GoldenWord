@@ -108,8 +108,8 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			if (resv.status == 200):
 				print("PingPong 200")
 				datav = resv.read().decode("utf-8")
-				datav_message = json.loads(datav)
-				response = datav_message['response']
+				datav_message = urllib.parse.parse_qs(datav)
+				response = datav_message.get('response', [''])[0]
 				print("###2 Message sent: " + response)
 	
 				payload = json.dumps({
