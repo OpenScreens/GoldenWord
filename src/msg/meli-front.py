@@ -90,13 +90,13 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			print("###1 Message received: " + messageGET)
 
 			
-			messagejson=[{
+			messagejson= {
 				"message": messageGET,
 				"from": userfrom,
 				"to": userto,
 				"chatid": idpack,
 				"frontend": "mercadolibre"
-			}]
+			}
 			print(messagejson)
 			body = json.dumps(messagejson)
 			headers = {
