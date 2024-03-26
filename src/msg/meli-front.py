@@ -112,8 +112,9 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 				print("Problem server pingpong" + str(resv.status))
 				return;
 
-		#def vuelta(self)
 		elif self.path == '/vuelta':
+			print("Received POST request VUELTA")
+		'''
 			self.send_response(200)
 			self.send_header('Content-type', 'application/json')
 			self.end_headers()
@@ -122,6 +123,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			post_params = urllib.parse.parse_qs(post_data.decode("utf-8"))
 			resource = post_params.get('response', [''])[0]
 			print("###rst pingpong: " + str(post_params))
+   
 			payload = json.dumps({
 				"from": {
 					"user_id": userto
@@ -137,6 +139,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			resv = conn.getresponse()
 			datav = resv.read().decode("utf-8")
 			conn.close()
+			'''
 
 if __name__ == '__main__':
 	server_address = ('0.0.0.0', 5000)
