@@ -112,13 +112,17 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-type', 'application/json')
 			self.end_headers()
-			print("###2 Message sent: " + response)
-			
+			if (response):
+				print("###2 Message sent: " + response)		
 			content_length = int(self.headers['Content-Length'])
 			post_data = self.rfile.read(content_length)
 			post_params = urllib.parse.parse_qs(post_data)
 			respuesta_de_comerciante = json.loads(post_params.decode("utf-8"))
-			
+			pprams = json.loads(post_data.decode("utf-8"))
+			resource = respuesta_de_comerciante.get('response')
+			print ("###122" + pprams)
+			print("###123" + respuesta_de_comerciante)
+			print ("###125" + resource)
 			payload = json.dumps({
 				"from": {
 					"user_id": userto
@@ -133,9 +137,6 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			conn.request("POST", f"/messages/packs/{idpack}/sellers/{userto}?tag=post_sale", payload, headers)
 			resv = conn.getresponse()
 			datav = resv.read().decode("utf-8")
-			messages
-				message["message"]
-				message["chatid"]
 			conn.close()
 
 if __name__ == '__main__':
