@@ -99,9 +99,6 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			}
 			print(messagejson)
 			body = json.dumps(messagejson)
-			headers = {
-			'Content-Type': 'application/json'
-			}
 			backend = http.client.HTTPSConnection("pingpong.test.goldenwordai.com", 4998)
 			backend.request("POST", "/", body, headers)
 			resv = backend.getresponse()
