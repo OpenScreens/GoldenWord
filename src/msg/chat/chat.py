@@ -16,20 +16,27 @@ def add_cors_headers(response):
 def after_request(response):
     return add_cors_headers(response)
 
+responses_array = []
+
 @app.route('/msg', methods=['GET'])
 def msg():
-	url = "http://127.0.0.1:4998"
+	return responses_array
 
-	data = {
-	"message": "ping",
-	"chatid": "1234",
-	"frontend": "chatpage"
-	}
-	response = requests.post(url, json=data)
+@app.route('/array', methods=['GET'])
+def post_array():
+    url = "https://pingpong.test.goldenwordai.com:4998"
 
-	print(response.text)
+    data = {
+        "message": "ping",
+        "chatid": "1234",
+        "frontend": "chatpage"
+    }
+    response = requests.post(url, json=data)
 
-	return response.text
+    # Agrega la respuesta al array
+    responses_array.append(response.text)
+
+    return response.text
 
 if __name__ == '__main__':
 	app.run(debug=True, threaded=True, port=5000)
