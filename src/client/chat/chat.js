@@ -38,9 +38,12 @@ function retrieveServerMessages() {
 
     fetch("http://localhost:5000/msg", requestOptions)
 		.then(response => response.text()) 
-		.then(text => {
-			var value = text.split('=')[1].split('&')[0];
-			displayResponse(value);
+		.then(data => {
+			const dataArray = JSON.parse(data);
+			dataArray.forEach(item => {
+                var value = item.split('=')[1].split('&')[0];
+                displayResponse(value);
+            });
 		})
         .catch(error => {
             console.error(error);
