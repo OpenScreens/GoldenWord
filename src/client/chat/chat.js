@@ -17,6 +17,8 @@ function processUserInput() {
 		appendMessage("sender", message);
 		messageInput.value = "";
 		var response = "";
+		sendInputtoServer(message)
+		
 		
 		// if (message.includes("me llamo")) {
 			//     var name = message.split("me llamo")[1].trim();
@@ -28,7 +30,27 @@ function processUserInput() {
 			}
 		}
 
-		
+function sendInputtoServer(message) {
+	const requestOptions = {
+		method: "POST",
+		body: JSON.stringify
+		({
+			"message": message,
+			"chatid": "1234",
+			"frontend": "chatpage"
+		}),
+		headers: { "Content-Type": "application/json" },
+	};
+
+	fetch("http://localhost:5000/array", requestOptions)
+		.then((response) => response.text())
+		.then((data) => {
+			console.log(data);
+		})
+		.catch((error) => {
+			console.error(error);
+		});
+}	
 //
 function retrieveServerMessages() {
     const requestOptions = {
