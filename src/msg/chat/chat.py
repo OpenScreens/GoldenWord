@@ -1,5 +1,6 @@
 import json
 from flask import Flask, jsonify, request
+import flask
 import requests
 
 app = Flask(__name__)
@@ -25,18 +26,11 @@ def msg():
 	responses_array = []
 	return emptyarray
 
-@app.route('/array', methods=['GET'])
+@app.route('/array', methods=['POST'])
 def post_array():
+	json_data = flask.request.json
 	url = "https://pingpong.test.goldenwordai.com:4998"
-
-	data = {
-		"message": "ping",
-		"chatid": "1234",
-		"frontend": "chatpage"
-	}
-	response = requests.post(url, json=data)
-
-	# Agrega la respuesta al array
+	response = requests.post(url, json=json_data)
 	responses_array.append(response.text)
 
 	return response.text
