@@ -20,7 +20,10 @@ responses_array = []
 
 @app.route('/msg', methods=['GET'])
 def msg():
-	return responses_array
+	global responses_array
+	emptyarray = responses_array
+	responses_array = []
+	return emptyarray
 
 @app.route('/array', methods=['GET'])
 def post_array():
