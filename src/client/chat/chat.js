@@ -12,11 +12,10 @@ function capitalizeFirstLetter(string) {
 
 function processUserInput() {
 	var messageInput = document.getElementById("message-input");
-	var message = messageInput.value.trim().toLowerCase(); 
+	var message = messageInput.value;
 	if (message !== "") {
 		appendMessage("sender", message);
 		messageInput.value = "";
-		var response = "";
 		sendInputtoServer(message)
 		
 		
