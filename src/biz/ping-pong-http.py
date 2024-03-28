@@ -3,6 +3,8 @@ import socketserver
 import http.client
 import json
 import urllib
+from urllib import request
+from urllib.parse import parse_qs
 import requests
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
@@ -33,12 +35,15 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		content_length = int(self.headers['Content-Length'])
 		post_data = self.rfile.read(content_length)
 		post_data = json.loads(post_data.decode())
-		
-		message = post_data.get('message', ['nonedefault'])
-		chatid = post_data.get('chatid', ['nonedefault'])
-		frontend = post_data.get('frontend', ['nonedefault'])
-		userto = post_data.get('to', ['nonedefault'])
-		userfrom = post_data.get('from', ['nonedefault'])
+  
+		post_array = request.data.decode('utf-8')
+		decoded_data = parse_qs(post_array)
+  
+		message = decoded_data.get('message', ['nonedefault'])[0]
+		chatid = decoded_data.get('chatid', ['nonedefault'])[0]
+		frontend = decoded_data.get('frontend', ['nonedefault'])[0]
+		userto = decoded_data.get('to', ['nonedefault'])[0]
+		userfrom = decoded_data.get('from', ['nonedefault'])[0]
 		print (message)
 		
 		self.send_response(200)
