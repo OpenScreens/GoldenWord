@@ -59,12 +59,11 @@ function retrieveServerMessages() {
     };
 
     fetch("http://localhost:5000/msg", requestOptions)
-		.then(response => response.text()) 
-		.then(data => {
-			const dataArray = JSON.parse(data);
-			dataArray.forEach(item => {
-                var value = item.split('=')[1].split('&')[0];
-                displayResponse(value);
+		.then(response => 
+			string_response = response.text()
+			const json_response = JSON.parse(data);
+			response_message = json_response["response"];
+                	displayResponse(response_message);
             });
 		})
         .catch(error => {
