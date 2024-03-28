@@ -38,8 +38,7 @@ def post_array():
 	json_data = flask.request.json
 	url = "https://pingpong.test.goldenwordai.com:4998"
 	requests.post(url, json=json_data)
-
-	return response.text
+	return json_data
 
 if __name__ == '__main__':
 	app.run(debug=True, threaded=True, port=5000)
