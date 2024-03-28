@@ -33,11 +33,8 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 	def do_POST(self):
 		content_length = int(self.headers['Content-Length'])
-		post_data = self.rfile.read(content_length)
-		post_data = json.loads(post_data.decode())
-  
-		post_array = request.data.decode('utf-8')
-		decoded_data = parse_qs(post_array)
+		post_data = self.rfile.read(content_length).decode('utf-8')
+		decoded_data = parse_qs(post_data)
   
 		message = decoded_data.get('message', ['nonedefault'])[0]
 		chatid = decoded_data.get('chatid', ['nonedefault'])[0]
