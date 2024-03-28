@@ -42,14 +42,14 @@ function sendInputtoServer(message) {
 	};
 
 	fetch("http://localhost:5000/array", requestOptions)
-		.then((response) => 
-			string_response = response.text())
+		.then((response) => {
+			string_response = response.text()
 			console.log(string_response);
 		})
 		.catch((error) => {
 			console.error(error);
 		});
-}	
+}
 //
 function retrieveServerMessages() {
     const requestOptions = {
@@ -58,19 +58,16 @@ function retrieveServerMessages() {
     };
 
     fetch("http://localhost:5000/msg", requestOptions)
-		.then(response => 
-			raw_response = response.text()
+		.then(response => {
+			raw_response = response.text();
 			const responses_array = JSON.parse(raw_response);
-			responses_array.foreach( json_response =>{ 
+			responses_array.foreach( json_response => { 
 				string_response = json_response["response"];
-                		displayResponse(string_response);
-			}
-            });
-		})
+				displayResponse(string_response);
+			})})
         .catch(error => {
             console.error(error);
-            displayResponse("Parsing error");
-            
+            displayResponse("Parsing error"); 
         });
 	}
 
