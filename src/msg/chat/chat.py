@@ -12,13 +12,6 @@ def add_cors_headers(response):
 	response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, PUT, DELETE'
 	response.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept'
 	return response
-
-def do_OPTIONS(self):
-        self.send_response(200, "ok")
-        self.send_header('Access-Control-Allow-Credentials', 'true')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header("Access-Control-Allow-Headers", "X-Requested-With, Content-type")
     
 # Apply the CORS headers to all routes using a Flask decorator
 @app.after_request
@@ -45,6 +38,15 @@ def post_vuelta():
 	data = {'response': response, 'chatid': chatid}
 	responses_array.append(data)
 	return jsonify(responses_array)
+
+@app.route('/array', methods=['POST', 'OPTIONS'])
+def options():
+    if request.method == 'OPTIONS':
+        response = flask.make_response()
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Max-Age'] = 86400  
+        return response
 
 @app.route('/array', methods=['POST'])
 def post_array():
