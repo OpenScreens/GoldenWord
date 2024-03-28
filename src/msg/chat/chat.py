@@ -39,20 +39,23 @@ def post_vuelta():
 	responses_array.append(data)
 	return jsonify(responses_array)
 
-@app.route('/array', methods=['POST', 'OPTIONS'])
+@app.route('/array', methods=['POST'])
 def post_array():
-    if request.method == 'OPTIONS':
-        response = app.make_default_options_response()
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
-        response.headers['Access-Control-Max-Age'] = 86400  
-        return response
-    elif request.method == 'POST':
-        # Procesamos la solicitud POST normalmente
-        json_data = request.json
-        url = "https://pingpong.test.goldenwordai.com:4998"
-        requests.post(url, json=json_data)
-        return jsonify(json_data)
+	post_array = request.data.decode('utf-8')
+	decoded_data = parse_qs(post_array)
+	message = decoded_data.get('message', [''])[0]
+	chatid = decoded_data.get('chatid', [''])[0]
+	frontend = decoded_data.get('frontend', [''])[0]
+
+	data = {
+		"message": message,
+		"chatid": chatid,
+		"frontend": frontend
+	}
+
+	url = "https://pingpong.test.goldenwordai.com:4998"
+	response = requests.post(url, data=data)
+	return jsonify(data)
 
 if __name__ == '__main__':
 	app.run(debug=True, threaded=True, port=5000)
