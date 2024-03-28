@@ -50,11 +50,12 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		if message.lower() == "ping":
 			print("Pong")
 			query_string = urllib.parse.urlencode({"response": "pong", "chatid": chatid})
-			print (query_string)
+			print ("##53 response -> " + query_string)
+			requests.post(frontend_url(frontend),data=query_string)
 		else:
 			#error generico
 			query_string = urllib.parse.urlencode({"response": "error", "chatid": chatid})
-			print (query_string)
+			requests.post(frontend_url(frontend),data=query_string)
 
 			#error especifico
 			query_string = urllib.parse.urlencode({"response": "input was " + message.lower(), "chatid": chatid})
