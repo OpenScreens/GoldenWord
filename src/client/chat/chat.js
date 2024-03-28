@@ -41,7 +41,7 @@ function sendInputtoServer(message) {
 		headers: { "Content-Type": "application/json" },
 	};
 
-	fetch("http://localhost:5000/array", requestOptions)
+	fetch("https://pingpong.test.goldenwordai.com:5000/array", requestOptions)
 		.then((response) => {
 			string_response = response.text()
 			console.log(string_response);
@@ -57,7 +57,7 @@ function retrieveServerMessages() {
         redirect: "follow"
     };
 
-    fetch("http://localhost:5000/msg", requestOptions)
+    fetch("https://pingpong.test.goldenwordai.com:5000/msg", requestOptions)
 		.then(response => response.text())
         .then(raw_response => {
             const responses_array = JSON.parse(raw_response);
