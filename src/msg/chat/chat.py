@@ -45,13 +45,11 @@ def post_array():
 	post_array = request.data.decode('utf-8')
 	decoded_data = parse_qs(post_array)
 	message = decoded_data.get('message', [''])[0]
-	chatid = decoded_data.get('chatid', [''])[0]
-	frontend = decoded_data.get('frontend', [''])[0]
 
 	data = {
 		"message": message,
-		"chatid": chatid,
-		"frontend": frontend
+		"chatid": "123132",
+		"frontend": "chatpage"
 	}
 	query_string = urllib.parse.urlencode(data)
 	url = "https://pingpong.test.goldenwordai.com:4998"
