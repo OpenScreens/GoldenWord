@@ -25,13 +25,19 @@ def msg():
 	emptyarray = responses_array
 	responses_array = []
 	return emptyarray
+	
+@app.route('/vuelta', methods=['POST'])
+def post_vuelta():
+	global responses_array
+	json_data = flask.request.json
+	responses_array.append(json_data)
+	return responses_array
 
 @app.route('/array', methods=['POST'])
 def post_array():
 	json_data = flask.request.json
 	url = "https://pingpong.test.goldenwordai.com:4998"
-	response = requests.post(url, json=json_data)
-	responses_array.append(response.text)
+	requests.post(url, json=json_data)
 
 	return response.text
 
