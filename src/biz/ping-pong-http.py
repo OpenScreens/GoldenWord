@@ -2,9 +2,8 @@ import http.server
 import socketserver
 import http.client
 import json
-
+import urllib
 import requests
-import urllib3
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 	"""Handle requests in a separate thread."""
@@ -50,15 +49,15 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		header= {'Content-Type':'application/x-www-form-urlencoded'}
 		if message.lower() == "ping":
 			print("Pong")
-			query_string = urllib3.parse.urlencode({"response": "pong", "chatid": chatid})
+			query_string = urllib.parse.urlencode({"response": "pong", "chatid": chatid})
 			requests.post(frontend_url(frontend),data=query_string)
 		else:
 			#error generico
-			query_string = urllib3.parse.urlencode({"response": "error", "chatid": chatid})
+			query_string = urllib.parse.urlencode({"response": "error", "chatid": chatid})
 			requests.post(frontend_url(frontend),data=query_string)
 
 			#error especifico
-			query_string = urllib3.parse.urlencode({"response": "input was " + message.lower(), "chatid": chatid})
+			query_string = urllib.parse.urlencode({"response": "input was " + message.lower(), "chatid": chatid})
 			requests.post(frontend_url(frontend),data=query_string)
 
 if __name__ == '__main__':
