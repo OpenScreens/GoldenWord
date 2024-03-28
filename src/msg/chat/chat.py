@@ -40,20 +40,19 @@ def post_vuelta():
 	return jsonify(responses_array)
 
 @app.route('/array', methods=['POST', 'OPTIONS'])
-def options():
+def post_array():
     if request.method == 'OPTIONS':
-        response = flask.make_response()
+        response = app.make_default_options_response()
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response.headers['Access-Control-Max-Age'] = 86400  
         return response
-
-@app.route('/array', methods=['POST'])
-def post_array():
-	json_data = flask.request.json
-	url = "https://pingpong.test.goldenwordai.com:4998"
-	requests.post(url, json=json_data)
-	return json_data
+    elif request.method == 'POST':
+        # Procesamos la solicitud POST normalmente
+        json_data = request.json
+        url = "https://pingpong.test.goldenwordai.com:4998"
+        requests.post(url, json=json_data)
+        return jsonify(json_data)
 
 if __name__ == '__main__':
 	app.run(debug=True, threaded=True, port=5000)
