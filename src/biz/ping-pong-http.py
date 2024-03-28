@@ -3,15 +3,23 @@ import socketserver
 import http.client
 import json
 
+import requests
+
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 	"""Handle requests in a separate thread."""
 
 
 def frontend_url(frontend):
-	if frontend == "chatpage":
-		return "http://localhost:5000"
-	if frontend == "meli":
-		return "blablabla"
+	if frontend == "frontest":
+		return "http://localhost:4999"
+	elif frontend == "mercadolibre":
+		return "https://meli.goldenwordai.com:5000/vuelta"
+	elif frontend == "chatpage":
+		return "http://localhost:5000/"
+	elif frontend == "react":
+		return "http://bff.test.goldenwordai.com"
+	else:
+		return "No frontend url", 400
 		
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
@@ -46,7 +54,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			#error generico
 			requests.post(frontend_url(frontend),{"response": "error", "chatid": chatid},)
 			#error especifico
-			requests.post(frontend_url(frontend),{"response": "input was "+ messsage.lower(), "chatid": chatid},)
+			requests.post(frontend_url(frontend),{"response": "input was "+ message.lower(), "chatid": chatid},)
 		
 
 
