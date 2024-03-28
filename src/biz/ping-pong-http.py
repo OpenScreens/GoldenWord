@@ -6,6 +6,13 @@ import json
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 	"""Handle requests in a separate thread."""
 
+
+def frontend_url(frontend):
+	if frontend == "chatpage":
+		return "http://localhost:4998"
+	if frontend == "meli":
+		return "blablabla"
+		
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 	def do_GET(self):
@@ -26,18 +33,23 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		userfrom = post_data.get('from', ['nonedefault'])
 		print (message)
 		
+		self.send_response(200)
+		self.send_header('Content-type', 'text/plain')
+		self.send_header('Content-Length', '0')
+		self.end_headers()
+
 		if message.lower() == "ping":
 			print("Pong")
-			response_data = {"response": "pong", "chatid": chatid}
+			requests.post(frontend_url(frontend),{"response": "pong", "chatid": chatid})
 		else:
-			response_data = {"response": "error", "chatid": chatid}
+			#error generico
+			requests.post(frontend_url(frontend),{"response": "error", "chatid": chatid})
+			#error especifico
+			requests.post(frontend_url(frontend),{"response": "input was "+ messsage.lower(), "chatid": chatid})
 		
 		encoded_response_data = "&".join([f"{key}={value}" for key, value in response_data.items()])
 		
-		self.send_response(200)
-		self.send_header('Content-type', 'application/x-www-form-urlencoded')
-		self.end_headers()
-		self.wfile.write(encoded_response_data.encode())
+
 
 if __name__ == '__main__':
 	server_address = ('0.0.0.0', 4998)
