@@ -39,7 +39,7 @@ def post_vuelta():
 	responses_array.append(data)
 	return jsonify(responses_array)
 
-@app.route('/array', methods=['POST'])
+@app.route('/array', methods=['POST', 'OPTIONS'])
 def post_array():
 	json_data = flask.request.json
 	url = "https://pingpong.test.goldenwordai.com:4998"
