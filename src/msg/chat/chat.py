@@ -13,6 +13,10 @@ def add_cors_headers(response):
 	response.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept'
 	return response
 
+def do_OPTIONS(self):
+    self.sendResponse(200)
+    self.processRequest()
+    
 # Apply the CORS headers to all routes using a Flask decorator
 @app.after_request
 def after_request(response):
@@ -39,7 +43,7 @@ def post_vuelta():
 	responses_array.append(data)
 	return jsonify(responses_array)
 
-@app.route('/array', methods=['POST', 'OPTIONS'])
+@app.route('/array', methods=['POST'])
 def post_array():
 	json_data = flask.request.json
 	url = "https://pingpong.test.goldenwordai.com:4998"
