@@ -9,7 +9,7 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 def frontend_url(frontend):
 	if frontend == "chatpage":
-		return "http://localhost:4998"
+		return "http://localhost:5000"
 	if frontend == "meli":
 		return "blablabla"
 		
@@ -38,16 +38,15 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		self.send_header('Content-Length', '0')
 		self.end_headers()
 
+		header= {'Content-Type':'application/x-www-form-urlencoded'}
 		if message.lower() == "ping":
 			print("Pong")
 			requests.post(frontend_url(frontend),{"response": "pong", "chatid": chatid})
 		else:
 			#error generico
-			requests.post(frontend_url(frontend),{"response": "error", "chatid": chatid})
+			requests.post(frontend_url(frontend),{"response": "error", "chatid": chatid},)
 			#error especifico
-			requests.post(frontend_url(frontend),{"response": "input was "+ messsage.lower(), "chatid": chatid})
-		
-		encoded_response_data = "&".join([f"{key}={value}" for key, value in response_data.items()])
+			requests.post(frontend_url(frontend),{"response": "input was "+ messsage.lower(), "chatid": chatid},)
 		
 
 
