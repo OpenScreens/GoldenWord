@@ -1,11 +1,17 @@
 import json
+import os
 from urllib.parse import parse_qs
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 import flask
 import requests
 import urllib
 
-app = Flask(__name__)
+current_dir = os.path.dirname(__file__)
+parent_dir = os.path.dirname(os.path.dirname(current_dir))
+
+template_dir = os.path.join(parent_dir, 'client', 'chat')
+
+app = Flask(__name__, template_folder=template_dir, static_folder=template_dir)
 
 # Define a function to add CORS headers to responses
 def add_cors_headers(response):
@@ -20,6 +26,10 @@ def after_request(response):
 	return add_cors_headers(response)
 
 responses_array = []
+
+@app.route('/')
+def index():
+    return render_template('chat.html')
 
 @app.route('/msg', methods=['GET'])
 def msg():
@@ -40,6 +50,7 @@ def post_vuelta():
 	responses_array.append(data)
 	return jsonify(responses_array)
 
+'''
 @app.route('/array', methods=['POST'])
 def post_array():
 	post_array = request.data.decode('utf-8')
@@ -55,6 +66,13 @@ def post_array():
 	url = "https://pingpong.test.goldenwordai.com:4998"
 	response = requests.post(url, data=query_string)
 	return jsonify(data)
+'''
+@app.route('/array', methods=['POST'])
+def post_array():
+	json_data = flask.request.json
+	url = "http://127.0.0.1:4998"
+	requests.post(url, json=json_data)
+	return json_data
 
 if __name__ == '__main__':
 	app.run(debug=True, threaded=True, port=5000)
