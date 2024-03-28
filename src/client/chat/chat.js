@@ -43,9 +43,9 @@ function sendInputtoServer(message) {
 	};
 
 	fetch("http://localhost:5000/array", requestOptions)
-		.then((response) => response.text())
-		.then((data) => {
-			console.log(data);
+		.then((response) => 
+			string_response = response.text())
+			console.log(string_response);
 		})
 		.catch((error) => {
 			console.error(error);
