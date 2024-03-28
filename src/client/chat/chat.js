@@ -30,16 +30,17 @@ function processUserInput() {
 		}
 
 function sendInputtoServer(message) {
-	const requestOptions = {
-		method: "POST",
-		body: JSON.stringify
-		({
-			"message": message,
-			"chatid": "1234",
-			"frontend": "chatpage"
-		}),
-		headers: { "Content-Type": "application/json" },
-	};
+	const urlEncodedData = new URLSearchParams();
+    urlEncodedData.append("message", message);
+    urlEncodedData.append("chatid", "1234");
+    urlEncodedData.append("frontend", "chatpage");
+
+    // Request options
+    const requestOptions = {
+        method: "POST",
+        body: urlEncodedData,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    };
 
 	fetch("https://pingpong.test.goldenwordai.com:5000/array", requestOptions)
 		.then((response) => {
