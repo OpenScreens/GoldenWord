@@ -58,13 +58,14 @@ function retrieveServerMessages() {
     };
 
     fetch("http://localhost:5000/msg", requestOptions)
-		.then(response => {
-			raw_response = response.text();
-			const responses_array = JSON.parse(raw_response);
-			responses_array.foreach( json_response => { 
-				string_response = json_response["response"];
-				displayResponse(string_response);
-			})})
+		.then(response => response.text())
+        .then(raw_response => {
+            const responses_array = JSON.parse(raw_response);
+            responses_array.forEach(json_response => { 
+                const string_response = json_response["response"];
+                displayResponse(string_response);
+            });
+		})
         .catch(error => {
             console.error(error);
             displayResponse("Parsing error"); 
