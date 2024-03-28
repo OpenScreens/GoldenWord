@@ -25,12 +25,6 @@ def frontend_url(frontend):
 		
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
-	def do_GET(self):
-		self.send_response(200)
-		self.send_header('Content-type', 'text/plain')
-		self.end_headers()
-		self.wfile.write(b'PingPong HTTP Server. Running port 4998')
-
 	def do_POST(self):
 		'''content_length = int(self.headers['Content-Length'])
 		post_data = self.rfile.read(content_length).decode('utf-8')
