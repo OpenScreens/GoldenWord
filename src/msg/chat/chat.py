@@ -70,7 +70,7 @@ def post_array():
 @app.route('/array', methods=['POST'])
 def post_array():
 	json_data = flask.request.json
-	url = "http://127.0.0.1:4998"
+	url = "https://pingpong.test.goldenwordai.com:4998"
 	requests.post(url, json=json_data)
 	return json_data
 
