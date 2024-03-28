@@ -30,19 +30,18 @@ function processUserInput() {
 		}
 
 function sendInputtoServer(message) {
-	const urlEncodedData = new URLSearchParams();
-    urlEncodedData.append("message", message);
-    urlEncodedData.append("chatid", "1234");
-    urlEncodedData.append("frontend", "chatpage");
+	const requestOptions = {
+		method: "POST",
+		body: JSON.stringify
+		({
+			"message": message,
+			"chatid": "1234",
+			"frontend": "chatpage"
+		}),
+		headers: { "Content-Type": "application/json" },
+	};
 
-    // Request options
-    const requestOptions = {
-        method: "POST",
-        body: urlEncodedData,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    };
-
-	fetch("https://pingpong.test.goldenwordai.com:5000/array", requestOptions)
+	fetch("http://127.0.0.1:5000/array", requestOptions)
 		.then((response) => {
 			string_response = response.text()
 			console.log(string_response);
@@ -51,6 +50,26 @@ function sendInputtoServer(message) {
 			console.error(error);
 		});
 }
+// function sendInputtoServer(message) {
+// 	const urlEncodedData = new URLSearchParams();
+//     urlEncodedData.append("message", message);
+
+//     // Request options
+//     const requestOptions = {
+//         method: "POST",
+//         body: urlEncodedData,
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//     };
+
+// 	fetch("http://127.0.0.1:5000/array", requestOptions)
+// 		.then((response) => {
+// 			string_response = response.text()
+// 			console.log(string_response);
+// 		})
+// 		.catch((error) => {
+// 			console.error(error);
+// 		});
+// }
 //
 function retrieveServerMessages() {
     const requestOptions = {
@@ -58,7 +77,7 @@ function retrieveServerMessages() {
         redirect: "follow"
     };
 
-    fetch("https://pingpong.test.goldenwordai.com:5000/msg", requestOptions)
+    fetch("http://127.0.0.1:5000/msg", requestOptions)
 		.then(response => response.text())
         .then(raw_response => {
             const responses_array = JSON.parse(raw_response);
