@@ -1,4 +1,5 @@
 import json
+from urllib.parse import parse_qs
 from flask import Flask, jsonify, request
 import flask
 import requests
@@ -29,8 +30,11 @@ def msg():
 @app.route('/vuelta', methods=['POST'])
 def post_vuelta():
 	global responses_array
-	response = request.form.get('response')
-	chatid = request.form.get('chatid')
+	post_vuelta = request.data.decode('utf-8')
+	decoded_data = parse_qs(post_vuelta)
+	response = decoded_data.get('response', [''])[0]
+	chatid = decoded_data.get('chatid', [''])[0]
+	print("response: " + response)
 	data = {'response': response, 'chatid': chatid}
 	responses_array.append(data)
 	return jsonify(responses_array)
