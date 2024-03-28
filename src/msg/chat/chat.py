@@ -3,6 +3,7 @@ from urllib.parse import parse_qs
 from flask import Flask, jsonify, request
 import flask
 import requests
+import urllib
 
 app = Flask(__name__)
 
@@ -52,9 +53,9 @@ def post_array():
 		"chatid": chatid,
 		"frontend": frontend
 	}
-
+	query_string = urllib.parse.urlencode(data)
 	url = "https://pingpong.test.goldenwordai.com:4998"
-	response = requests.post(url, data=data)
+	response = requests.post(url, data=query_string)
 	return jsonify(data)
 
 if __name__ == '__main__':
