@@ -29,9 +29,11 @@ def msg():
 @app.route('/vuelta', methods=['POST'])
 def post_vuelta():
 	global responses_array
-	json_data = flask.request.json
-	responses_array.append(json_data)
-	return responses_array
+	response = request.form.get('response')
+	chatid = request.form.get('chatid')
+	data = {'response': response, 'chatid': chatid}
+	responses_array.append(data)
+	return jsonify(responses_array)
 
 @app.route('/array', methods=['POST'])
 def post_array():
