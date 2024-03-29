@@ -30,16 +30,16 @@ def index():
 	return html
 
 @app.route('/chat.js')
-def index():
+def chatjs():
 	with open("../client/chat/chat.js","rb") as f:
-		html = f.read()
-	return html
+		js = f.read()
+	return js
 
 @app.route('/chat.css')
-def index():
+def chatcss():
 	with open("../client/chat/chat.css","rb") as f:
-		html = f.read()
-	return html
+		css = f.read()
+	return css
 
 @app.route('/msg', methods=['GET'])
 def msg():
