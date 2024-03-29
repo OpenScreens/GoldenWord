@@ -1,7 +1,7 @@
 import json
 import os
 from urllib.parse import parse_qs
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, jsonify, render_template, request
 import flask
 import requests
 import urllib
@@ -12,7 +12,7 @@ app = Flask(__name__)
 # Define a function to add CORS headers to responses
 def add_cors_headers(response):
 	response.headers['Access-Control-Allow-Origin'] = '*'
-	response.headers['Access-Control-Allow-Methods'] = 'POST'
+	response.headers['Access-Control-Allow-Methods'] = 'POST, GET'
 	response.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept'
 	return response
     
@@ -39,7 +39,7 @@ def chatjs():
 def chatcss():
 	with open("client/chat/chat.css","rb") as f:
 		css = f.read()
-	return css
+	return Response(css, mimetype='text/css')
 
 @app.route('/msg', methods=['GET'])
 def msg():
