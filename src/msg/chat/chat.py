@@ -39,7 +39,7 @@ def chatjs():
 def chatcss():
 	with open("client/chat/chat.css","rb") as f:
 		css = f.read()
-	return Response(css, mimetype='text/css')
+	return Response(css, content_type='text/css')
 
 @app.route('/msg', methods=['GET'])
 def msg():
