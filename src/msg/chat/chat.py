@@ -70,14 +70,14 @@ def post_array():
 		"frontend": "chatpage"
 	}
 	query_string = urllib.parse.urlencode(data)
-	url = "http://pingpong.goldenwordai.com:4998"
+	url = "http://ec2-54-86-183-125.compute-1.amazonaws.com:4998"
 	response = requests.post(url, data=query_string)
 	return jsonify(data)
 '''
 @app.route('/array', methods=['POST'])
 def post_array():
 	json_data = flask.request.json
-	url = "http://pingpong.goldenwordai.com:4998"
+	url = "http://ec2-54-86-183-125.compute-1.amazonaws.com:4998"
 	requests.post(url, json=json_data)
 	return json_data
 

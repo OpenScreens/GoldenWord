@@ -17,7 +17,7 @@ def frontend_url(frontend):
 	elif frontend == "mercadolibre":
 		return "https://meli.goldenwordai.com:5000/vuelta"
 	elif frontend == "chatpage":
-		return "http://pingpong.goldenwordai.com:5000/vuelta"
+		return "http://ec2-54-86-183-125.compute-1.amazonaws.com:5000/vuelta"
 	elif frontend == "react":
 		return "http://bff.test.goldenwordai.com"
 	else:
