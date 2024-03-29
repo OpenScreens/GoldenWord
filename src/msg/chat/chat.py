@@ -16,7 +16,7 @@ app = Flask(__name__, template_folder=template_dir, static_folder=template_dir)
 # Define a function to add CORS headers to responses
 def add_cors_headers(response):
 	response.headers['Access-Control-Allow-Origin'] = '*'
-	response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, PUT, DELETE'
+	response.headers['Access-Control-Allow-Methods'] = 'POST'
 	response.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept'
 	return response
     
