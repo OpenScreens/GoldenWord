@@ -1,8 +1,1 @@
-urllib.parse
 flask
-requests
-http.server
-socketserver
-http.client
-json
-urllib
