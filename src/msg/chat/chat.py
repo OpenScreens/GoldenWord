@@ -1,10 +1,7 @@
-import json
-import os
 from urllib.parse import parse_qs
 from flask import Flask, Response, jsonify, render_template, request
 import flask
 import requests
-import urllib
 
 
 app = Flask(__name__)
@@ -12,7 +9,7 @@ app = Flask(__name__)
 # Define a function to add CORS headers to responses
 def add_cors_headers(response):
 	response.headers['Access-Control-Allow-Origin'] = '*'
-	response.headers['Access-Control-Allow-Methods'] = 'POST, GET'
+	response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
 	response.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept'
 	return response
     
@@ -73,14 +70,14 @@ def post_array():
 		"frontend": "chatpage"
 	}
 	query_string = urllib.parse.urlencode(data)
-	url = "https://pingpong.test.goldenwordai.com:4998"
+	url = "http://pingpong.goldenwordai.com:4998"
 	response = requests.post(url, data=query_string)
 	return jsonify(data)
 '''
 @app.route('/array', methods=['POST'])
 def post_array():
 	json_data = flask.request.json
-	url = "https://pingpong.test.goldenwordai.com:4998"
+	url = "http://pingpong.goldenwordai.com:4998"
 	requests.post(url, json=json_data)
 	return json_data
 

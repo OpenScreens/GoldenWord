@@ -41,7 +41,7 @@ function sendInputtoServer(message) {
 		headers: { "Content-Type": "application/json" },
 	};
 
-	fetch("https://pingpong.test.goldenwordai.com:5000/array", requestOptions)
+	fetch("http://pingpong.goldenwordai.com:5000/array", requestOptions)
 		.then((response) => {
 			string_response = response.text()
 			console.log(string_response);
@@ -61,7 +61,7 @@ function sendInputtoServer(message) {
 //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
 //     };
 
-// 	fetch("http://127.0.0.1:5000/array", requestOptions)
+// 	fetch("http://pingpong.goldenwordai.com:5000/array", requestOptions)
 // 		.then((response) => {
 // 			string_response = response.text()
 // 			console.log(string_response);
@@ -77,7 +77,7 @@ function retrieveServerMessages() {
         redirect: "follow"
     };
 
-    fetch("https://pingpong.test.goldenwordai.com:5000/msg", requestOptions)
+    fetch("http://pingpong.goldenwordai.com:5000/msg", requestOptions)
 		.then(response => response.text())
         .then(raw_response => {
             const responses_array = JSON.parse(raw_response);
@@ -88,7 +88,7 @@ function retrieveServerMessages() {
 		})
         .catch(error => {
             console.error(error);
-            displayResponse("Parsing error"); 
+            displayResponse("Server /msg error"); 
         });
 	}
 
