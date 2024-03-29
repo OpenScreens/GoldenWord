@@ -29,7 +29,21 @@ responses_array = []
 
 @app.route('/')
 def index():
-    return render_template('chat.html')
+	with open("chat.html") as f:
+		html = f.read()
+	return html
+
+@app.route('/chat.js')
+def index():
+	with open("chat.js","rb") as f:
+		html = f.read()
+	return html
+
+@app.route('/chat.css')
+def index():
+	with open("chat.css","rb") as f:
+		html = f.read()
+	return html
 
 @app.route('/msg', methods=['GET'])
 def msg():
