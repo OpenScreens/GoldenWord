@@ -6,12 +6,8 @@ import flask
 import requests
 import urllib
 
-current_dir = os.path.dirname(__file__)
-parent_dir = os.path.dirname(os.path.dirname(current_dir))
 
-template_dir = os.path.join(parent_dir, 'client', 'chat')
-
-app = Flask(__name__, template_folder=template_dir, static_folder=template_dir)
+app = Flask(__name__)
 
 # Define a function to add CORS headers to responses
 def add_cors_headers(response):
@@ -29,19 +25,19 @@ responses_array = []
 
 @app.route('/')
 def index():
-	with open("chat.html") as f:
+	with open("../client/chat/chat.html") as f:
 		html = f.read()
 	return html
 
 @app.route('/chat.js')
 def index():
-	with open("chat.js","rb") as f:
+	with open("../client/chat/chat.js","rb") as f:
 		html = f.read()
 	return html
 
 @app.route('/chat.css')
 def index():
-	with open("chat.css","rb") as f:
+	with open("../client/chat/chat.css","rb") as f:
 		html = f.read()
 	return html
 
