@@ -25,19 +25,19 @@ responses_array = []
 
 @app.route('/')
 def index():
-	with open("../client/chat/chat.html") as f:
+	with open("client/chat/chat.html") as f:
 		html = f.read()
 	return html
 
 @app.route('/chat.js')
 def chatjs():
-	with open("../client/chat/chat.js","rb") as f:
+	with open("client/chat/chat.js","rb") as f:
 		js = f.read()
 	return js
 
 @app.route('/chat.css')
 def chatcss():
-	with open("../client/chat/chat.css","rb") as f:
+	with open("client/chat/chat.css","rb") as f:
 		css = f.read()
 	return css
 
