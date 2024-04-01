@@ -2,8 +2,6 @@ import http.server
 import socketserver
 import http.client
 import json
-import urllib
-from urllib import request
 from urllib.parse import parse_qs, urlencode
 import requests
 
@@ -32,15 +30,6 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		self.wfile.write(b'PingPong HTTP Server. Running port 4998')
 
 	def do_POST(self):
-		'''content_length = int(self.headers['Content-Length'])
-		post_data = self.rfile.read(content_length).decode('utf-8')
-		decoded_data = parse_qs(post_data)
-  
-		message = decoded_data.get('message', ['nonedefault'])[0]
-		chatid = decoded_data.get('chatid', ['nonedefault'])[0]
-		frontend = decoded_data.get('frontend', ['nonedefault'])[0]
-		userto = decoded_data.get('to', ['nonedefault'])[0]
-		userfrom = decoded_data.get('from', ['nonedefault'])[0]'''
 		content_length = int(self.headers['Content-Length'])
 		post_data = self.rfile.read(content_length)
 		post_data = json.loads(post_data.decode())
