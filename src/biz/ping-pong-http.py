@@ -2,12 +2,11 @@ import http.server
 import socketserver
 import http.client
 import json
-from urllib.parse import parse_qs, urlencode
+from urllib.parse import urlencode
 import requests
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 	"""Handle requests in a separate thread."""
-
 
 def frontend_url(frontend):
 	if frontend == "frontest":
@@ -37,9 +36,8 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		message = post_data.get('message', ['nonedefault'])
 		chatid = post_data.get('chatid', ['nonedefault'])
 		frontend = post_data.get('frontend', ['nonedefault'])
-		userto = post_data.get('to', ['nonedefault'])
-		userfrom = post_data.get('from', ['nonedefault'])
-		print (message)
+  
+		print ("Received json:" +  str(post_data))
 		
 		self.send_response(200)
 		self.send_header('Content-type', 'text/plain')
@@ -47,8 +45,8 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		self.end_headers()
   
 		if message.lower() == "ping":
-			print("Pong")
 			requests.post(frontend_url(frontend), urlencode({"response": "pong", "chatid": chatid}))
+			print("Send response ping to " + frontend_url(frontend))
 
 		else:
 			#error generico
@@ -56,6 +54,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 			#error especifico
 			requests.post(frontend_url(frontend), urlencode({"response": "input was " + message.lower(), "chatid": chatid}))
+			print("Send error response to " + frontend_url(frontend))
 
 if __name__ == '__main__':
 	server_address = ('0.0.0.0', 4998)
