@@ -1,15 +1,3 @@
-// var responses = {
-//     "hola": "¡Hola! ¿Cómo estás?",
-//     "bien vos?" : "Bien!",
-//     "bien": "Me alegro de escuchar eso.",
-//     "mal": "Espero que te sientas mejor pronto.",
-//     "chau" : "¡Adiós! Que tengas un buen día."
-// };
-
-function capitalizeFirstLetter(string) {
-	return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
 function processUserInput() {
 	var messageInput = document.getElementById("message-input");
 	var message = messageInput.value;
@@ -17,17 +5,8 @@ function processUserInput() {
 		appendMessage("sender", message);
 		messageInput.value = "";
 		sendInputtoServer(message)
-		
-		
-		// if (message.includes("me llamo")) {
-			//     var name = message.split("me llamo")[1].trim();
-			//     response = "Hola " + capitalizeFirstLetter(name);
-			// } else {
-				//     message === "ping" ? response = "pong" : message === "pong" ? response = "ping" :   
-				//     response = responses[message] || "Lo siento, no entendí. ¿Podrías reformular tu pregunta?";
-				// }
-			}
 		}
+	}
 
 function sendInputtoServer(message) {
 	const requestOptions = {
@@ -50,27 +29,7 @@ function sendInputtoServer(message) {
 			console.error(error);
 		});
 }
-// function sendInputtoServer(message) {
-// 	const urlEncodedData = new URLSearchParams();
-//     urlEncodedData.append("message", message);
 
-//     // Request options
-//     const requestOptions = {
-//         method: "POST",
-//         body: urlEncodedData,
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//     };
-
-// 	fetch("https://pingpong.test.goldenwordai.com:5000/array", requestOptions)
-// 		.then((response) => {
-// 			string_response = response.text()
-// 			console.log(string_response);
-// 		})
-// 		.catch((error) => {
-// 			console.error(error);
-// 		});
-// }
-//
 function retrieveServerMessages() {
     const requestOptions = {
         method: "GET",
