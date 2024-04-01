@@ -4,7 +4,7 @@ import http.client
 import json
 import urllib
 from urllib import request
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlencode
 import requests
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
@@ -56,21 +56,17 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		self.send_header('Content-type', 'text/plain')
 		self.send_header('Content-Length', '0')
 		self.end_headers()
-
-		header= {'Content-Type':'application/x-www-form-urlencoded'}
+  
 		if message.lower() == "ping":
 			print("Pong")
-			query_string = urllib.parse.urlencode({"response": "pong", "chatid": chatid})
-			print ("##53 response -> " + query_string)
-			requests.post(frontend_url(frontend),data=query_string)
+			requests.post(frontend_url(frontend), urlencode({"response": "pong", "chatid": chatid}))
+
 		else:
 			#error generico
-			query_string = urllib.parse.urlencode({"response": "error", "chatid": chatid})
-			requests.post(frontend_url(frontend),data=query_string)
+			requests.post(frontend_url(frontend), urlencode({"response": "error", "chatid": chatid}))
 
 			#error especifico
-			query_string = urllib.parse.urlencode({"response": "input was " + message.lower(), "chatid": chatid})
-			requests.post(frontend_url(frontend),data=query_string)
+			requests.post(frontend_url(frontend), urlencode({"response": "input was " + message.lower(), "chatid": chatid}))
 
 if __name__ == '__main__':
 	server_address = ('0.0.0.0', 4998)
