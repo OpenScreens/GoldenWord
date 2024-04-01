@@ -1,4 +1,6 @@
 import requests
+inputMessage = ["ping","hola",'}e%$>"&/p}']
+outputExpected = ["pong","No Pong","No Pong"]
 
 def test_send_message(input,output):
     url = "https://pingpong.test.goldenwordai.com:4998"
@@ -8,9 +10,8 @@ def test_send_message(input,output):
     print("Test de envío de mensaje exitoso")
 
 def main():
-    test_send_message("ping","pong")
-    test_send_message("hola","No Pong")
-    test_send_message('}e%$>"&/p}"',"No Pong")
+    for i in range(len(inputMessage)):
+        test_send_message(inputMessage[i])
 
 if __name__ == "__main__":
     main()
