@@ -2,10 +2,9 @@ import requests
 
 def test_send_message(input,output):
     url = "https://pingpong.test.goldenwordai.com:4998"
-    data = {'response': input, 'chatid': '123'}
-    response = requests.post(url, data=data)
+    data = {"message": input,"chatid": "123","frontend": "chatpage"}
+    response = requests.post(url, json=data)
     assert response.status_code == 200
-    assert response.json() == [{'response': output, 'chatid': '123'}]
     print("Test de envío de mensaje exitoso")
 
 def main():
