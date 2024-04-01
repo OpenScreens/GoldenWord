@@ -50,7 +50,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 		else:
 			#error generico
-			requests.post(frontend_url(frontend), urlencode({"response": "error", "chatid": chatid}))
+			requests.post(frontend_url(frontend), urlencode({"response": "No Pong", "chatid": chatid}))
 
 			#error especifico
 			requests.post(frontend_url(frontend), urlencode({"response": "input was " + message.lower(), "chatid": chatid}))
