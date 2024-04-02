@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Ejecutar script de verificación
-        run: python ../src/test/chattest.py
+        run: python src/test/chattest.py
 
       - name: Realizar push al branch principal
         if: success()
