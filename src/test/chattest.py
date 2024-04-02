@@ -1,33 +1,47 @@
-import json
+from flask import jsonify, request
+from urllib.parse import parse_qs
+from flask import Flask
 import requests
+
 inputMessage = ["ping","hola",'}e%$>"&/p}']
-outputExpected = ["pong", 'error', 'input was holooa', 'error', 'input was }e%$>"&/p}']
+outputExpected = ["pong", 'No Pong, input was hoola', 'No Pong, input was }e%$>"&/p}']
 outputr = []
 
-def test_send_message(input):
-    url = "https://pingpong.test.goldenwordai.com:4998"
-    data = {"message": input,"chatid": "123","frontend": "chatpage"}
+app = Flask(__name__)
+
+def test_send_message(input_msg):
+    url = "http://localhost:4998/"
+    data = {"message": input_msg, "chatid": "123", "frontend": "backtest"}
     response = requests.post(url, json=data)
-    assert response.status_code == 200
-    print(f"Test for sending message '{input}' successful")
+    print(f"sending message '{input_msg}'")
 
-def retrieve_server_messages():
-    url = "https://pingpong.test.goldenwordai.com:5000/msg"
-    response = requests.get(url)
-    json_data = (response.json())
-    for item in json_data:
-        message = item.get('response')
-        outputr.append(message)
+@app.route('/testinput')
+def send_test_messages():
+    for message in inputMessage:
+        test_send_message(message)
+    return jsonify({'message': 'Pruebas de envío de mensajes realizadas con éxito'})
 
-def main():
-    for i in range(len(inputMessage)):
-        test_send_message(inputMessage[i])
-        retrieve_server_messages()
-    print("----------------------------")    
-    for i in range(len(outputExpected)):
-        if outputExpected[i] == outputr[i]:
-            print(f"Test '{outputr[i]}' successful")
-        else:
-            print(f"Test '{outputr[i]} vs {outputExpected[i]}' failed")
-if __name__ == "__main__":
-    main()
+@app.route('/test', methods=['POST','GET'])
+def do_post():
+	if request.method == 'POST':
+		post_data = request.data.decode('utf-8')
+		decoded_data = parse_qs(post_data)
+		response = decoded_data.get('response', [''])[0]
+		print("response: " + response)
+		outputr.append(response)
+  
+	if len(outputr) == len(outputExpected):
+		try:
+			for i in range(len(outputExpected)):
+				assert outputr[i] == outputExpected[i], f"Error: respuesta recibida {outputr[i]}, esperada {outputExpected[i]}"
+		except AssertionError as e:
+			error_message = str(e)
+			print(error_message)
+			return jsonify({'error': error_message})
+	return jsonify({'message':'Esperando respuestas'})
+
+if __name__ == '__main__':
+	app.run(host='0.0.0.0', debug=True, port=5000)
+
+
+
