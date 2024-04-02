@@ -17,6 +17,8 @@ def frontend_url(frontend):
 		return "https://pingpong.test.goldenwordai.com:5000/vuelta"
 	elif frontend == "react":
 		return "http://bff.test.goldenwordai.com"
+	elif frontend=="backtest":
+		return "http://localhost:5000/test"
 	else:
 		return "No frontend url", 400
 		
@@ -50,10 +52,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 		else:
 			#error generico
-			requests.post(frontend_url(frontend), urlencode({"response": "No Pong", "chatid": chatid}))
-
-			#error especifico
-			requests.post(frontend_url(frontend), urlencode({"response": "input was " + message.lower(), "chatid": chatid}))
+			requests.post(frontend_url(frontend), urlencode({"response": "No Pong, input was " + message.lower(), "chatid": chatid}))
 			print("Send error response to " + frontend_url(frontend))
 
 if __name__ == '__main__':
