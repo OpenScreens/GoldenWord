@@ -35,9 +35,9 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		post_data = self.rfile.read(content_length)
 		post_data = json.loads(post_data.decode())
 		
-		message = post_data.get('message', ['nonedefault'])
-		chatid = post_data.get('chatid', ['nonedefault'])
-		frontend = post_data.get('frontend', ['nonedefault'])
+		message = post_data.get('message', ['default'])
+		chatid = post_data.get('chatid', ['default'])
+		frontend = post_data.get('frontend', ['default'])
   
 		print ("Received json:" +  str(post_data))
 		
