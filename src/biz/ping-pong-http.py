@@ -52,7 +52,10 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 		else:
 			#error generico
-			requests.post(frontend_url(frontend), urlencode({"response": "No Pong, input was " + message.lower(), "chatid": chatid}))
+			requests.post(frontend_url(frontend), urlencode({"response": "No Pong", "chatid": chatid}))
+
+			#error especifico
+			requests.post(frontend_url(frontend), urlencode({"response": "input was " + message.lower(), "chatid": chatid}))
 			print("Send error response to " + frontend_url(frontend))
 
 if __name__ == '__main__':
