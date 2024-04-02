@@ -1,0 +1,23 @@
+name: Verificar Commit
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  verificar_commit_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v2
+
+      - name: Ejecutar script de verificación
+        run: python ../src/test/chattest.py
+
+      - name: Realizar push al branch principal
+        if: success()
+        run: |
+          git config --local user.email "bot@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git push origin ${{ github.ref }}
