@@ -45,22 +45,24 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		frontend = post_data['frontend'][0]
 
 		print ("Received json:" +  str(post_data))
-		
+
 		self.send_response(200)
 		self.send_header('Content-type', 'text/plain')
 		self.send_header('Content-Length', '0')
 		self.end_headers()
-  
+
+		#not needed requests choses encoding
+		# outbound_headers = {"Content-Type":"application/x-www-form-urlencoded"}
 		if message.lower() == "ping":
-			requests.post(frontend_url(frontend), urlencode({"response": "pong", "chatid": chatid}))
+			requests.post(frontend_url(frontend), {"response": "pong", "chatid": chatid})
 			print("Send response ping to " + frontend_url(frontend))
 
 		else:
 			#error generico
-			requests.post(frontend_url(frontend), urlencode({"response": "No Pong", "chatid": chatid}))
+			requests.post(frontend_url(frontend), {"response": "No Pong", "chatid": chatid})
 
 			#error especifico
-			requests.post(frontend_url(frontend), urlencode({"response": "input was " + message.lower(), "chatid": chatid}))
+			requests.post(frontend_url(frontend), {"response": "input was " + message.lower(), "chatid": chatid})
 			print("Send error response to " + frontend_url(frontend))
 
 if __name__ == '__main__':
