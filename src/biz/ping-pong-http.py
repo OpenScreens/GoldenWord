@@ -2,7 +2,7 @@ import http.server
 import socketserver
 import http.client
 import json
-from urllib.parse import urlencode, parse_qs
+from urllib.parse import urlencode,parse_qs
 import requests
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
@@ -20,10 +20,10 @@ def frontend_url(frontend):
 	elif frontend=="backtest":
 		return "http://localhost:5000/test"
 	elif frontend=="telegram":
-		return "http://ssh.telegrama.test.pokerbuddyai.com:10302"
+		return "http://ssh.telegrama.test.pokerbuddyai.com:10302/outbound"
 	else:
 		return "No frontend url", 400
-		
+
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 	def do_GET(self):
