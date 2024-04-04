@@ -39,10 +39,11 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			post_data = json.loads(post_data.decode())
 		elif self.headers['Content-Type'] == "application/x-www-form-urlencoded":
 			post_data = parse_qs(post_data.decode())
-		message = post_data.get('message', ['default'])
-		chatid = post_data.get('chatid', ['default'])
-		frontend = post_data.get('frontend', ['default'])
-  
+		print(post_data)
+		message = post_data['message'][0]
+		chatid = post_data['chatid'][0]
+		frontend = post_data['frontend'][0]
+
 		print ("Received json:" +  str(post_data))
 		
 		self.send_response(200)
