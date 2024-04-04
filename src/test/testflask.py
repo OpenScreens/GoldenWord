@@ -2,9 +2,9 @@ import json
 import subprocess
 import sys
 
-# pingpong = subprocess.Popen(
-# 	[sys.executable, "/mnt/c/Users/gaspa/Desktop/BackFront/src/biz/ping-pong-http.py"]
-# )
+pingpong = subprocess.Popen(
+	[sys.executable, "/mnt/c/Users/gaspa/Desktop/BackFront/src/biz/ping-pong-http.py"]
+)
 
 process = subprocess.Popen(
 	[sys.executable, "/mnt/c/Users/gaspa/Desktop/BackFront/src/test/chattest.py"],
@@ -23,11 +23,11 @@ if process.returncode == 0:
 
 	if all(value == "pass" for value in test_values):
 		print("All tests passed")
-		#pingpong.terminate()
+		pingpong.terminate()
 		exit(0)
 	else:
 		print("Not all tests passed")
-		#pingpong.terminate()
+		pingpong.terminate()
 		exit(1)
 else:
 	print("Error:", stderr)
