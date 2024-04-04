@@ -3,7 +3,7 @@ repos:
     hooks:
         -   id: testing-hook
             name: Test Flask Hook
-            entry: python src/test/chattest.py
+            entry: python3 src/test/testflask.py
             language: system
             types: [python]
             pass_filenames: false
