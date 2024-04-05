@@ -45,10 +45,8 @@ def msg():
 @app.route('/vuelta', methods=['POST'])
 def post_vuelta():
 	global responses_array
-	post_vuelta = request.data.decode('utf-8')
-	decoded_data = parse_qs(post_vuelta)
-	response = decoded_data.get('response', [''])[0]
-	chatid = decoded_data.get('chatid', [''])[0]
+	response = request.form.get('response')
+	chatid = request.form.get('chatid')
 	print("response: " + response)
 	data = {'response': response, 'chatid': chatid}
 	responses_array.append(data)
