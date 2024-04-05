@@ -4,6 +4,7 @@ import http.client
 import json
 from urllib.parse import urlencode
 import requests
+import http.client
 
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
@@ -57,18 +58,17 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		if message.lower() == "ping":
 			try:
 
-				data = {
-					'response': 'Pong',
-					'chatid': chatid 
+				url = "http://bff.test.goldenwordai.com:6000/message/sendForApi"
+
+				payload = 'response=Pong&chatid=sadadasdasdsaWQQW'
+				headers = {
+				'Content-Type': 'application/x-www-form-urlencoded'
 				}
-    
-				data_str = '&'.join([f"{key}={value}" for key, value in data.items()])
-				print(data_str)
-				response = requests.post(
-					frontend_url(frontend), data_str)
-				
+
+				response = requests.request("POST", url, headers=headers, data=payload)
 
 				print(response.text)
+
 				
 			except Exception as e:
 				self.wfile.write((json.dumps({"error": str(e)})).encode())
@@ -80,16 +80,27 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			# 	urlencode({"response": "No Pong", "chatid": chatid}),
 			# )
    
-			data = {
-				'response': 'No Pong',
-				'chatid': chatid
+			# data = {
+			# 	'response': 'No Pong',
+			# 	'chatid': chatid
+			# }
+
+			# data_str = '&'.join([f"{key}={value}" for key, value in data.items()])
+			# print(data_str)
+			# response = requests.post(
+			# 	frontend_url(frontend), data_str)
+			
+
+			# print(response.text)
+
+			url = "http://bff.test.goldenwordai.com:6000/message/sendForApi"
+
+			payload = 'response=No Pong&chatid=sadadasdasdsaWQQW'
+			headers = {
+			'Content-Type': 'application/x-www-form-urlencoded'
 			}
 
-			data_str = '&'.join([f"{key}={value}" for key, value in data.items()])
-			print(data_str)
-			response = requests.post(
-				frontend_url(frontend), data_str)
-			
+			response = requests.request("POST", url, headers=headers, data=payload)
 
 			print(response.text)
    
