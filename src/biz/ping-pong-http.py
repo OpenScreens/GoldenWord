@@ -2,7 +2,7 @@ import http.server
 import socketserver
 import http.client
 import json
-from urllib.parse import urlencode,parse_qs
+from urllib.parse import urlencode
 import requests
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
@@ -16,11 +16,11 @@ def frontend_url(frontend):
 	elif frontend == "chatpage":
 		return "https://pingpong.test.goldenwordai.com:5000/vuelta"
 	elif frontend == "react":
-		return "http://bff.test.goldenwordai.com:6000/message/sendForApi"
+		return "http://bff.test.goldenwordai.com:6000"
 	elif frontend=="backtest":
 		return "http://localhost:5000/test"
 	elif frontend=="telegram":
-		return "http://ssh.telegrama.test.pokerbuddyai.com:10302/outbound"
+		return "http://ssh.telegrama.test.pokerbuddyai.com:10302"
 	else:
 		return "No frontend url", 400
 		
@@ -35,18 +35,13 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 	def do_POST(self):
 		content_length = int(self.headers['Content-Length'])
 		post_data = self.rfile.read(content_length)
-		if self.headers['Content-Type'] == "application/json":
-			print ("hhhh" + str(post_data))
-			post_data = json.loads(post_data.decode())
-		elif self.headers['Content-Type'] == "application/x-www-form-urlencoded":
-			post_data = parse_qs(post_data.decode())
-			message = post_data['message'][0]
-			chatid = post_data['chatid'][0]
-			frontend = post_data['frontend'][0]
-		message = post_data['message']
-		chatid = post_data['chatid']
-		frontend = post_data['frontend']
-		print ("Received:" +  str(post_data))
+		post_data = json.loads(post_data.decode())
+		
+		message = post_data.get('message', ['default'])
+		chatid = post_data.get('chatid', ['default'])
+		frontend = post_data.get('frontend', ['default'])
+  
+		print ("Received json:" +  str(post_data))
 		
 		self.send_response(200)
 		self.send_header('Content-type', 'text/plain')
@@ -70,4 +65,3 @@ if __name__ == '__main__':
 	httpd = ThreadedHTTPServer(server_address, SimpleHTTPRequestHandler)
 	print("Serving HTTP on port 4998..")
 	httpd.serve_forever()
- 
