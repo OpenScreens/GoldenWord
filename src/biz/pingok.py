@@ -33,6 +33,19 @@ def jsonrequest(self, message, frontend, chatid):
 	self.wfile.write(response_json.encode())
 	print("Send response to " + frontend_url(frontend))
 
+def sendResponse (message, frontend, chatid):
+			headers = {
+			'Content-Type': 'application/x-www-form-urlencoded'
+			}
+			data = {
+				'response': message,
+				'chatid': chatid
+			}
+			payload = '&'.join([f"{key}={value}" for key, value in data.items()])
+			response = requests.request("POST", frontend_url(frontend), headers=headers, data=payload)
+			print(response.text)
+		
+
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 	def do_GET(self):
 		self.send_response(200)
@@ -57,64 +70,20 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 		if message.lower() == "ping":
 			try:
-
-				url = "http://bff.test.goldenwordai.com:6000/message/sendForApi"
-
-				payload = 'response=Pong&chatid=sadadasdasdsaWQQW'
-				headers = {
-				'Content-Type': 'application/x-www-form-urlencoded'
-				}
-
-				response = requests.request("POST", url, headers=headers, data=payload)
-
-				print(response.text)
-
+				sendResponse("pong", frontend, chatid)
+				jsonrequest(self,"pong", frontend, chatid)
 				
 			except Exception as e:
 				self.wfile.write((json.dumps({"error": str(e)})).encode())
 
 		else:
 			# error generico
-			# requests.post(
-			# 	frontend_url(frontend),
-			# 	urlencode({"response": "No Pong", "chatid": chatid}),
-			# )
-   
-			# data = {
-			# 	'response': 'No Pong',
-			# 	'chatid': chatid
-			# }
-
-			# data_str = '&'.join([f"{key}={value}" for key, value in data.items()])
-			# print(data_str)
-			# response = requests.post(
-			# 	frontend_url(frontend), data_str)
-			
-
-			# print(response.text)
-
-			url = "http://bff.test.goldenwordai.com:6000/message/sendForApi"
-
-			payload = 'response=No Pong&chatid=sadadasdasdsaWQQW'
-			headers = {
-			'Content-Type': 'application/x-www-form-urlencoded'
-			}
-
-			response = requests.request("POST", url, headers=headers, data=payload)
-
-			print(response.text)
-   
-			#jsonrequest(self,"No Pong", frontend, chatid)
+			sendResponse("No pong", frontend, chatid)
+			jsonrequest(self,"No pong", frontend, chatid)
 
 			# error especifico
-			# requests.post(
-			# 	frontend_url(frontend),
-			# 	urlencode(
-			# 		{"response": "input was " + message.lower(), "chatid": chatid}
-			# 	),
-			# )
-			# jsonrequest(self,"input was " + message.lower(), frontend, chatid)
-			print("Send error response to " + frontend_url(frontend))
+			sendResponse("input was " + message.lower(), frontend, chatid)
+			jsonrequest(self,"input was " + message.lower(), frontend, chatid)
 
 if __name__ == "__main__":
 	server_address = ("0.0.0.0", 4998)
