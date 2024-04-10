@@ -1,6 +1,7 @@
 import http.server
 import socketserver
 import http.client
+import json
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 	"""Handle requests in a separate thread."""
@@ -34,7 +35,27 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			print("Notification received:")
 			print(data)
 			'''
-   
+			enviarmessage("ping")
+			enviarmessage("pong")
+
+def enviarmessage(message):
+	conn = http.client.HTTPSConnection("api.twitch.tv")
+	payload = json.dumps({
+	"broadcaster_id": "1063475030",
+	"sender_id": "1063475030",
+	"message": message
+	})
+	headers = {
+	'Content-Type': 'application/json',
+	'Authorization': 'Bearer x9toyqcnjp7efn3abm2ugjaqbhd8x7',
+	'Client-Id': 'pfmyo3749gxj2yyatlsjwazrr5zhzn',
+	'Content-Type': 'application/json'
+	}
+	conn.request("POST", "/helix/chat/messages", payload, headers)
+	res = conn.getresponse()
+	data = res.read()
+	print(data.decode("utf-8"))
+
 if __name__ == '__main__':
 	server_address = ('0.0.0.0', 443)
 	httpd = ThreadedHTTPServer(server_address, SimpleHTTPRequestHandler)
