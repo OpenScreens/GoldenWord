@@ -20,7 +20,11 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			self.send_response(404)
 			self.end_headers()'''
 		if self.path == '/callback':
+			content_length = int(self.headers["Content-Length"])
+			post_data = self.rfile.read(content_length).decode()
+			post_data = json.loads(post_data)
 			print("Received POST TWITCH")
+			print(post_data)
 			self.send_header('Content-type', 'application/json')
 			self.send_header('Connection', 'close')
 			self.send_response(200)
@@ -35,8 +39,8 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			print("Notification received:")
 			print(data)
 			'''
-			enviarmessage("ping")
-			enviarmessage("pong")
+			# enviarmessage("ping")
+			# enviarmessage("pong")
 
 def enviarmessage(message):
 	conn = http.client.HTTPSConnection("api.twitch.tv")
@@ -57,7 +61,7 @@ def enviarmessage(message):
 	print(data.decode("utf-8"))
 
 if __name__ == '__main__':
-	server_address = ('0.0.0.0', 443)
+	server_address = ('0.0.0.0', 5000)
 	httpd = ThreadedHTTPServer(server_address, SimpleHTTPRequestHandler)
-	print("Serving HTTP on port 443..")
+	print("Serving HTTP on port 5000..")
 	httpd.serve_forever()
