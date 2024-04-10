@@ -6,7 +6,6 @@ from urllib.parse import parse_qs, urlencode
 import requests
 import http.client
 
-
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 	"""Handle requests in a separate thread."""
 
@@ -25,12 +24,6 @@ def frontend_url(frontend):
 		return "http://ssh.telegrama.test.pokerbuddyai.com:10302/outbound"
 	else:
 		return "No frontend url", 400
-
-def jsonrequest(self, message, frontend, chatid):
-	response_data = {"message": "Sending response to " + frontend_url(frontend), "response": message, "chatid": chatid}
-	response_json = json.dumps(response_data)
-	self.wfile.write(response_json.encode())
-	print("Send response to " + frontend_url(frontend))
 
 def sendResponse (message, frontend, chatid):
 			headers = {
@@ -75,7 +68,6 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		if message.lower() == "ping":
 			try:
 				sendResponse("pong", frontend, chatid)
-				jsonrequest(self,"pong", frontend, chatid)
 				
 			except Exception as e:
 				self.wfile.write((json.dumps({"error": str(e)})).encode())
@@ -83,11 +75,9 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		else:
 			# error generico
 			sendResponse("No pong", frontend, chatid)
-			jsonrequest(self,"No pong", frontend, chatid)
 
 			# error especifico
 			sendResponse("input was " + message.lower(), frontend, chatid)
-			jsonrequest(self,"input was " + message.lower(), frontend, chatid)
 
 if __name__ == "__main__":
 	server_address = ("0.0.0.0", 4998)
