@@ -25,13 +25,14 @@ def frontend_url(frontend):
 	else:
 		return "No frontend url", 400
 
-def sendResponse (message, frontend, chatid):
+def sendResponse (message, frontend, userid, chatid):
 			headers = {
 			'Content-Type': 'application/x-www-form-urlencoded'
 			}
 			payload = urlencode({
 				'response': message,
-				'chatid': chatid
+				'userid': userid,
+    			'chatid': chatid
 			})
 			response = requests.request("POST", frontend_url(frontend), headers=headers, data=payload)
 			print(response.text)
@@ -50,11 +51,13 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		if self.headers['Content-Type'] == "application/json":
 			post_data = json.loads(post_data)
 			message = post_data['message']
+			userid = post_data['userid']
 			chatid = post_data['chatid']
 			frontend = post_data['frontend']
 		elif self.headers['Content-Type'] == "application/x-www-form-urlencoded":
 			post_data = parse_qs(post_data)
 			message = post_data['message'][0]
+			userid = post_data['userid'][0]
 			chatid = post_data['chatid'][0]
 			frontend = post_data['frontend'][0]
 		
@@ -67,17 +70,17 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 		if message.lower() == "ping":
 			try:
-				sendResponse("pong", frontend, chatid)
+				sendResponse("pong", frontend, userid, chatid)
 				
 			except Exception as e:
 				self.wfile.write((json.dumps({"error": str(e)})).encode())
 
 		else:
 			# error generico
-			sendResponse("No pong", frontend, chatid)
+			sendResponse("No pong", frontend, userid, chatid)
 
 			# error especifico
-			sendResponse("input was " + message.lower(), frontend, chatid)
+			sendResponse("input was " + message.lower(), frontend, userid, chatid)
 
 if __name__ == "__main__":
 	server_address = ("0.0.0.0", 4998)
