@@ -19,7 +19,7 @@ def frontend_url(frontend):
 	elif frontend == "react":
 		return "http://bff.test.goldenwordai.com:6060/message/sendForApi"
 	elif frontend == "fronttest":
-		return "http://chat.test.goldenwordai.com/vuelta"
+		return "http://chatping.test.goldenwordai.com/vuelta"
 	elif frontend == "telegram":
 		return "http://ssh.telegrama.test.pokerbuddyai.com:10302/outbound"
 	else:
