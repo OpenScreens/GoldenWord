@@ -25,14 +25,14 @@ def frontend_url(frontend):
 	else:
 		return "No frontend url", 400
 
-def sendResponse (message, frontend, userid, chatid):
+def sendResponse (message, frontend, user_id, chat_id):
 			headers = {
 			'Content-Type': 'application/x-www-form-urlencoded'
 			}
 			payload = urlencode({
 				'response': message,
-				'userid': userid,
-    			'chatid': chatid
+				'user_id': user_id,
+    			'chat_id': chat_id
 			})
 			response = requests.request("POST", frontend_url(frontend), headers=headers, data=payload)
 			print(response.text)
@@ -51,14 +51,14 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		if self.headers['Content-Type'] == "application/json":
 			post_data = json.loads(post_data)
 			message = post_data['message']
-			userid = post_data['user_id']
-			chatid = post_data['chat_id']
+			user_id = post_data['user_id']
+			chat_id = post_data['chat_id']
 			frontend = post_data['frontend']
 		elif self.headers['Content-Type'] == "application/x-www-form-urlencoded":
 			post_data = parse_qs(post_data)
 			message = post_data['message'][0]
-			userid = post_data['user_id'][0]
-			chatid = post_data['chat_id'][0]
+			user_id = post_data['user_id'][0]
+			chat_id = post_data['chat_id'][0]
 			frontend = post_data['frontend'][0]
 		
 		print ("Received:" +  str(post_data))
@@ -70,17 +70,17 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 		if message.lower() == "ping":
 			try:
-				sendResponse("pong", frontend, userid, chatid)
+				sendResponse("pong", frontend, user_id, chat_id)
 				
 			except Exception as e:
 				self.wfile.write((json.dumps({"error": str(e)})).encode())
 
 		else:
 			# error generico
-			sendResponse("No pong", frontend, userid, chatid)
+			sendResponse("No pong", frontend, user_id, chat_id)
 
 			# error especifico
-			sendResponse("input was " + message.lower(), frontend, userid, chatid)
+			sendResponse("input was " + message.lower(), frontend, user_id, chat_id)
 
 if __name__ == "__main__":
 	server_address = ("0.0.0.0", 4998)
