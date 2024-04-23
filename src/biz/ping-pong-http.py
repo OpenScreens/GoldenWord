@@ -51,14 +51,14 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 		if self.headers['Content-Type'] == "application/json":
 			post_data = json.loads(post_data)
 			message = post_data['message']
-			userid = post_data['userid']
-			chatid = post_data['chatid']
+			userid = post_data['user_id']
+			chatid = post_data['chat_id']
 			frontend = post_data['frontend']
 		elif self.headers['Content-Type'] == "application/x-www-form-urlencoded":
 			post_data = parse_qs(post_data)
 			message = post_data['message'][0]
-			userid = post_data['userid'][0]
-			chatid = post_data['chatid'][0]
+			userid = post_data['user_id'][0]
+			chatid = post_data['chat_id'][0]
 			frontend = post_data['frontend'][0]
 		
 		print ("Received:" +  str(post_data))
