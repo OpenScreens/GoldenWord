@@ -1,3 +1,5 @@
+import threading
+import time
 import http.server
 import socketserver
 import http.client
@@ -9,23 +11,26 @@ import http.client
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 	"""Handle requests in a separate thread."""
 
-def frontend_url(frontend):
+def frontend_urls(frontend):
+	urls = []
 	if frontend == "frontest":
-		return "http://localhost:4999"
+		urls.append("http://localhost:4999")
 	elif frontend == "mercadolibre":
-		return "https://meli.goldenwordai.com:5000/vuelta"
+		urls.append("https://meli.goldenwordai.com:5000/vuelta")
 	elif frontend == "chatpage":
-		return "https://pingpong.test.goldenwordai.com:5000/vuelta"
+		urls.append("https://pingpong.test.goldenwordai.com:5000/vuelta")
 	elif frontend == "react3":
-		return "http://react.test.pokerbuddyai.com:6060/message/sendForApi"
+		urls.append("http://react.test.pokerbuddyai.com:6060/message/sendForApi")
 	elif frontend == "fronttest":
-		return "http://chatping.test.goldenwordai.com/vuelta"
+		urls.append("http://chatping.test.goldenwordai.com/vuelta")
+		urls.append("http://chatping.test.goldenwordai.com/heart")
 	elif frontend == "telegram":
-		return "http://ssh.telegrama.test.pokerbuddyai.com:10302/outbound"
+		urls.append("http://ssh.telegrama.test.pokerbuddyai.com:10302/outbound")
 	else:
 		return "No frontend url", 400
+	return urls
 
-def sendResponse (message, frontend, user_id, chat_id):
+def send_response(message, frontends, user_id, chat_id):
 			headers = {
 			'Content-Type': 'application/x-www-form-urlencoded'
 			}
@@ -34,7 +39,7 @@ def sendResponse (message, frontend, user_id, chat_id):
 				'user_id': user_id,
     			'chat_id': chat_id
 			})
-			response = requests.request("POST", frontend_url(frontend), headers=headers, data=payload)
+			response = requests.request("POST", frontends, headers=headers, data=payload)
 			print(response.text)
 
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
@@ -62,25 +67,45 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			frontend = post_data['frontend'][0]
 		
 		print ("Received:" +  str(post_data))
-
 		self.send_response(200)
 		self.send_header("Content-type", "application/json")
 		self.send_header("Content-Length","0")
 		self.end_headers()
 
+		heartbeat_thread = HeartbeatThread(frontend_urls(frontend)[1], user_id, chat_id)
+		heartbeat_thread.start()
+		time.sleep(15)
 		if message.lower() == "ping":
 			try:
-				sendResponse("pong", frontend, user_id, chat_id)
-				
+				send_response("pong", frontend_urls(frontend)[0], user_id, chat_id)
 			except Exception as e:
 				self.wfile.write((json.dumps({"error": str(e)})).encode())
-
 		else:
 			# error generico
-			sendResponse("No pong", frontend, user_id, chat_id)
-
+			send_response("No pong", frontend_urls(frontend)[0], user_id, chat_id)
 			# error especifico
-			sendResponse("input was " + message.lower(), frontend, user_id, chat_id)
+			send_response("input was " + message.lower(), frontend_urls(frontend)[0], user_id, chat_id)
+		
+		heartbeat_thread.stop()
+  
+class HeartbeatThread(threading.Thread):
+	def __init__(self, frontends, user_id, chat_id):
+		threading.Thread.__init__(self)
+		self.frontends = frontends
+		self.user_id = user_id
+		self.chat_id = chat_id
+		self.stop_event = threading.Event()
+
+	def run(self):
+		while not self.stop_event.is_set():
+			try:
+				send_response("Working", self.frontends, self.user_id, self.chat_id)
+			except Exception as e:
+				print("Error sending heartbeat:", str(e))
+			time.sleep(1)
+
+	def stop(self):
+		self.stop_event.set()
 
 if __name__ == "__main__":
 	server_address = ("0.0.0.0", 4998)
