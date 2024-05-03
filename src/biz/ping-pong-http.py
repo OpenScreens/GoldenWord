@@ -37,7 +37,8 @@ def send_response(message, frontends, user_id, chat_id):
 			payload = urlencode({
 				'response': message,
 				'user_id': user_id,
-    			'chat_id': chat_id
+				'chat_id': chat_id,
+				'source': 'i made it up'
 			})
 			response = requests.request("POST", frontends, headers=headers, data=payload)
 			print(response.text)
@@ -74,19 +75,19 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 		heartbeat_thread = HeartbeatThread(frontend_urls(frontend)[1], user_id, chat_id)
 		heartbeat_thread.start()
-		time.sleep(15)
 		if message.lower() == "ping":
 			try:
+				heartbeat_thread.stop()
 				send_response("pong", frontend_urls(frontend)[0], user_id, chat_id)
 			except Exception as e:
 				self.wfile.write((json.dumps({"error": str(e)})).encode())
 		else:
+			heartbeat_thread.stop()
 			# error generico
 			send_response("No pong", frontend_urls(frontend)[0], user_id, chat_id)
 			# error especifico
 			send_response("input was " + message.lower(), frontend_urls(frontend)[0], user_id, chat_id)
 		
-		heartbeat_thread.stop()
   
 class HeartbeatThread(threading.Thread):
 	def __init__(self, frontends, user_id, chat_id):
@@ -102,7 +103,7 @@ class HeartbeatThread(threading.Thread):
 				send_response("Working", self.frontends, self.user_id, self.chat_id)
 			except Exception as e:
 				print("Error sending heartbeat:", str(e))
-			time.sleep(1)
+			time.sleep(0.3)
 
 	def stop(self):
 		self.stop_event.set()
