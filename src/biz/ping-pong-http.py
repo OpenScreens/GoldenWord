@@ -24,6 +24,9 @@ def frontend_urls(frontend):
 	elif frontend == "fronttest":
 		urls.append("http://chatping.test.goldenwordai.com/vuelta")
 		urls.append("http://chatping.test.goldenwordai.com/heart")
+	elif frontend == "twitter":
+		urls.append("http://twitterbot.test.goldenwordai.com/response")
+		urls.append("http://twitterbot.test.goldenwordai.com/heart")
 	elif frontend == "telegram":
 		urls.append("http://ssh.telegrama.test.pokerbuddyai.com:10302/outbound")
 	else:
