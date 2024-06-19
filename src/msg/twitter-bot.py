@@ -1,86 +1,121 @@
-import threading
-import time
-import http.server
-import socketserver
-import http.client
-import json
-from urllib.parse import parse_qs, urlencode
 import requests
-import http.client
 from requests_oauthlib import OAuth1Session
-import os
-import json
+import time
 
-##Hide on production
-consumer_key = "BwkR1mbGBzyQc8Nxxkw5eXwEf"
-consumer_secret = "xpZhCKac6j9HzGa2lUCYm8XR3MviFkepi4uVJoVa2NRFV2GlE6"
-access_token = "1803163556797460480-8wl1gSo5T183R2bfqx18CrEs9xReFr"
-access_token_secret = "ZcD5CHQzqyUnlqMbiaBDGsZNWI9rXJafmnU7goEBNUFZ4"
-##
+bearer_token = 'AAAAAAAAAAAAAAAAAAAAAI2GuQEAAAAAGcnuDllrnF6ZNMp%2BMvy0pFWam9o%3DjSr1Jt307Oh6WLYiCZDWy4qf2PuHfCMlnbq9Ki0IF2U4HDAOrw'
+consumer_key = 'NveXKkFiKcB11mlbaufjhnVBJ'
+consumer_secret = 'KPNCv4GczrufNF652fG6FvTKEhRDss3rlV6CttSsHgFIIgqK8U'
+user_id = '1803163556797460480'
+access_token = '1803163556797460480-lmBsYn66xawNF4UYOdFIV1nfhnA2RN'
+access_token_secret = 'FssB6hXCSwuSI9q1akoqmBpeSYv7rmIJwT9tJZwycRari'
 
+oauth = OAuth1Session(consumer_key,consumer_secret,access_token,access_token_secret)
 
-class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
-	"""Handle requests in a separate thread."""
+def check_mentions_and_reply(oauth, user_id):
+    try:
+        url = f"https://api.twitter.com/2/users/{user_id}/mentions"
+        response = oauth.get(url)
+        if response.status_code != 200:
+            raise Exception(f"Request returned an error: {response.status_code} {response.text}")
 
-class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
-	def do_GET(self):
-		self.send_response(200)
-		sendResponse()
-		self.send_header("Content-type", "text/plain")
-		self.end_headers()
-		self.wfile.write(b"TwitterBOT HTTP Server. Running port 80")
-
-	def do_POST(self):
-		content_length = int(self.headers["Content-Length"])
-		post_data = self.rfile.read(content_length).decode()
-		print ("Received:" +  str(post_data))
-	
-		if self.headers['Content-Type'] == "application/json":
-			post_data = json.loads(post_data)
-			message = post_data['message']
-			user_id = post_data['user_id']
-			chat_id = post_data['chat_id']
-			frontend = post_data['frontend']
-		elif self.headers['Content-Type'] == "application/x-www-form-urlencoded":
-			post_data = parse_qs(post_data)
-			message = post_data['message'][0]
-			user_id = post_data['user_id'][0]
-			chat_id = post_data['chat_id'][0]
-			frontend = post_data['frontend'][0]
-		
-		self.send_response(200)
-		self.send_header("Content-type", "application/json")
-		self.send_header("Content-Length","0")
-		self.end_headers()
+        json_response = response.json()
+        if 'data' in json_response:
+            for mention in json_response['data']:
+                tweet_id = mention['id']
+                tweet_text = mention.get('text', 'No text available')
+                print(f"Mention tweet ({tweet_id}) from : {tweet_text}")
+                #server_response(tweet_text)
+                reply_to_mention(oauth, tweet_id)
+            print("Processed all mentions.")
+        else:
+            print("No new mentions found.")
+    except Exception as e:
+        print(f"Exception occurred during mention check: {str(e)}")
 
 
+def reply_to_mention(oauth, tweet_id):
+    try:
+        url = "https://api.twitter.com/2/tweets"
+        headers = {
+            "Authorization": f"Bearer {bearer_token}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "text": 'ok',
+            "reply": {
+                "in_reply_to_tweet_id": tweet_id
+            }
+        }
+        response = oauth.post(url, headers=headers, json=data)
+        if response.status_code != 201:
+            raise Exception(f"Error replying to tweet {tweet_id}: {response.status_code} {response.text}")
+        print(f"Replied to mention with tweet ID {tweet_id}.")
+    except Exception as e:
+        print(f"Exception occurred during reply: {str(e)}")
 
-def sendResponse():
-	#textinput = input("Tweet: ")
-	payload = {"text": 'test'}
-	print("test tweet")
-
-	oauth = OAuth1Session(
-		consumer_key,
-		client_secret=consumer_secret,
-		resource_owner_key=access_token,
-		resource_owner_secret=access_token_secret,
-	)
-
-	response = oauth.post("https://api.x.com/2/tweets",json=payload,)
-
-	if response.status_code != 201:
-		raise Exception("Request returned an error: {} {}".format(response.status_code, response.text))
-
-	print("Response code: {}".format(response.status_code))
-
-	json_response = response.json()
-	print(json.dumps(json_response))
- 
- 
+def server_response(tweet):
+    try:
+        url = "http://pingpong.test.goldenwordai.com:4998"
+        headers = {
+            "Content-Type": "application/json"
+        }
+        data = {
+            "message": tweet,
+            "frontend": "twitter"
+        }
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code != 201:
+            raise Exception(f"Error response server: {response.status_code} {response.text}")
+    except Exception as e:
+        print(f"Exception occurred during response: {str(e)}")
 
 if __name__ == "__main__":
-	server_address = ("0.0.0.0", 80)
-	httpd = ThreadedHTTPServer(server_address, SimpleHTTPRequestHandler)
-	print("Serving HTTP on port 80..")
-	httpd.serve_forever()
+    user_id = '1803163556797460480'
+
+    while True:
+        try:
+            check_mentions_and_reply(oauth, user_id)
+        except Exception as e:
+            print(f"Exception occurred: {str(e)}")
+        time.sleep(60)
+
+'''
+import tweepy
+
+# Replace with your keys and tokens
+consumer_key = 'NveXKkFiKcB11mlbaufjhnVBJ'
+consumer_secret = 'KPNCv4GczrufNF652fG6FvTKEhRDss3rlV6CttSsHgFIIgqK8U'
+access_token = '1803163556797460480-lmBsYn66xawNF4UYOdFIV1nfhnA2RN'
+access_token_secret = 'FssB6hXCSwuSI9q1akoqmBpeSYv7rmIJwT9tJZwycRari'
+
+# Authentication with Twitter API
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+
+# Listener to handle mentions
+class tweepy.Stream(tweepy.StreamingClient):
+    def on_status(self, status):
+        print(f"Nueva mención: {status.user.screen_name}: {status.text}")
+
+    def on_error(self, status_code):
+        print(f"Error en el stream: {status_code}")
+
+# Initialize Tweepy API
+api = tweepy.API(auth)
+
+# Define a function to start streaming
+def start_streaming(listener, track):
+    stream = tweepy.Stream(auth=api.auth, listener=listener)
+    stream.filter(track=track)
+
+# Define the track keyword or mention
+track = ['@PingPongLLM']  # Replace with your Twitter handle or keyword
+
+# Keep the program running (optional, depending on your environment)
+while True:
+    try:
+        start_streaming(MentionListener(), track)
+    except Exception as e:
+        print(f"Error: {e}")
+'''
+
