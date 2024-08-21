@@ -29,6 +29,9 @@ def frontend_urls(frontend):
 		urls.append("http://twitterbot.test.goldenwordai.com/heart")
 	elif frontend == "telegram":
 		urls.append("http://ssh.telegrama.test.pokerbuddyai.com:10302/outbound")
+	elif frontend == "chathelp":
+		urls.append("http://localhost/response")
+		urls.append("http://localhost/heart")
 	else:
 		return "No frontend url", 400
 	return urls
@@ -71,27 +74,44 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 			frontend = post_data['frontend'][0]
 		
 		print ("Received:" +  str(post_data))
-		self.send_response(200)
-		self.send_header("Content-type", "application/json")
-		self.send_header("Content-Length","0")
-		self.end_headers()
 
 		heartbeat_thread = HeartbeatThread(frontend_urls(frontend)[1], user_id, chat_id)
 		heartbeat_thread.start()
+
+		response_message = ""
 		if message.lower() == "ping":
 			try:
 				heartbeat_thread.stop()
-				send_response("pong", frontend_urls(frontend)[0], user_id, chat_id)
+				response_message = "pong"
 			except Exception as e:
-				self.wfile.write((json.dumps({"error": str(e)})).encode())
+				response_message = json.dumps({"error": str(e)})
 		else:
 			heartbeat_thread.stop()
-			# error generico
-			send_response("No pong", frontend_urls(frontend)[0], user_id, chat_id)
-			# error especifico
-			send_response("input was " + message.lower(), frontend_urls(frontend)[0], user_id, chat_id)
+			response_message = f"No pong. Input was {message.lower()}"
+
+		self.send_response(200)
+		self.send_header("Content-type", "application/json")
+		self.send_header('Access-Control-Allow-Origin', '*')
+		self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+		self.send_header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+		self.end_headers()
 		
-  
+		response_data = {
+			"response": response_message,
+			"user_id": user_id,
+			"chat_id": chat_id,
+			"source": "i made it up"
+		}
+		self.wfile.write(json.dumps(response_data).encode())
+		send_response(response_message, frontend_urls(frontend)[0], user_id, chat_id)
+
+	def do_OPTIONS(self):
+		self.send_response(200)
+		self.send_header('Access-Control-Allow-Origin', '*')
+		self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+		self.send_header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+		self.end_headers()
+
 class HeartbeatThread(threading.Thread):
 	def __init__(self, frontends, user_id, chat_id):
 		threading.Thread.__init__(self)
