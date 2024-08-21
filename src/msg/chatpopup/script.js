@@ -16,29 +16,39 @@ function sendMessage(event) {
     userMessageElement.innerText = userMessage;
     messageContainer.appendChild(userMessageElement);
  
-    // fetch("http://localhost:4998", {
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       message: userMessage,
-    //       frontend: 'chathelp',
-    //       user_id:'0000',
-    //       chat_id:'0000'
-
-    //     }),
-    //     headers: {
-    //       "Content-type": "application/json;"
-    //     }
-    //   })
-    //     .then((response) => response.json())
-    //     .then((json) => console.log(json));
-
-    setTimeout(() => {
+    fetch("http://localhost:4998/", {
+        method: "POST",
+        body: JSON.stringify({
+          message: userMessage,
+          frontend: 'chathelp',
+          user_id:'0000',
+          chat_id:'0000'
+        }),
+        headers: {
+          "Content-type": "application/json"
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(json => {
         const responseMessageElement = document.createElement("div");
         responseMessageElement.className = "response-msg";
-        responseMessageElement.innerText = "response";
+        responseMessageElement.innerText = json.response;
         messageContainer.appendChild(responseMessageElement);
         messageContainer.scrollTop = messageContainer.scrollHeight;
-    }, 1000);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        const errorMessageElement = document.createElement("div");
+        errorMessageElement.className = "error-msg";
+        errorMessageElement.innerText = "An error occurred while sending the message. Please try again.";
+        messageContainer.appendChild(errorMessageElement);
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    });
 
     document.getElementById("userMessage").value = "";
     messageContainer.scrollTop = messageContainer.scrollHeight;
