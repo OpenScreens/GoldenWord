@@ -74,8 +74,7 @@ def reload_prompts():
 
 def classify_prompt(user_input):
     prompt_classify = load_prompt('prompt_classify.txt')
-    classification_prompt = prompt_classify + f"\nUser input: {user_input}"
-    response = call_chatgpt(classification_prompt, [], model=PROMPT_BRANCH_MODEL)
+    response = call_chatgpt(prompt_classify, [user_input], model=PROMPT_BRANCH_MODEL)
     return response.content.strip().lower()
 
 @app.route('/', methods=["POST"])
