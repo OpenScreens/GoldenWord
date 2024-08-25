@@ -16,13 +16,10 @@ function sendMessage(event) {
     userMessageElement.innerText = userMessage;
     messageContainer.appendChild(userMessageElement);
  
-    fetch("http://localhost:4998/", {
+    fetch("http://localhost:5000/", {
         method: "POST",
         body: JSON.stringify({
-          message: userMessage,
-          frontend: 'chathelp',
-          user_id:'0000',
-          chat_id:'0000'
+          user_input: userMessage,
         }),
         headers: {
           "Content-type": "application/json"

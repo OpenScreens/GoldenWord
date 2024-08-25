@@ -1,15 +1,9 @@
-import time
-from urllib.parse import urlencode
 import flask
 from flask import request, jsonify
-import threading
 import requests
 from dotenv import load_dotenv
 import os
 import logging
-import json
-import yaml
-json.loads = yaml.load
 from openai import OpenAI
 
 app = flask.Flask(__name__)
@@ -27,10 +21,20 @@ openai_model = "gpt-4"
 error_prefix = ""
 conversations = {}
 
-PROMPT_BRANCH_MODEL = 'gpt-4'
+PROMPT_CLASSIFY_MODEL = 'gpt-4'
 
 client = OpenAI(api_key=openai_token)
 session = requests.Session()
+
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST'
+    response.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept'
+    return response
+
+@app.after_request
+def after_request(response):
+    return add_cors_headers(response)
 
 def call_chatgpt(prompt, messages, response_format=None, tokens=None, functions=None, function_call=None, model=None):
     if model is None:
@@ -74,26 +78,22 @@ def reload_prompts():
 
 def classify_prompt(user_input):
     prompt_classify = load_prompt('prompt_classify.txt')
-    response = call_chatgpt(prompt_classify, [user_input], model=PROMPT_BRANCH_MODEL)
+    response = call_chatgpt(prompt_classify, [user_input], model=PROMPT_CLASSIFY_MODEL)
     return response.content.strip().lower()
 
 @app.route('/', methods=["POST"])
 def receive_msg():
     data = request.json
     user_input = data.get('user_input')
-    
+
     if not user_input:
-        return jsonify({"error": "No user input provided"}), 400
+        response = jsonify({"error": "No user input provided"})
+        return response, 400
 
     prompt_type = classify_prompt(user_input)
-    
-    if prompt_type == "unknown":
-        return jsonify({"error": "Unable to classify the request"}), 400
 
-
-    response = f"{prompt_type}"
-    
-    return jsonify({"response": response}), 200
+    response = jsonify({"response": f"{prompt_type}"})
+    return response, 200
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
