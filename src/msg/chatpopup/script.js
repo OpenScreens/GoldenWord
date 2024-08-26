@@ -6,6 +6,12 @@ function closeForm() {
     document.getElementById("myForm").style.display = "none";
 }
 
+function generateUserId() {
+    return 'user_' + Math.random().toString(36).substr(2, 9);
+}
+
+let userId = generateUserId();
+
 function sendMessage(event) {
     event.preventDefault();
     const messageContainer = document.getElementById("messageContainer");
@@ -20,6 +26,7 @@ function sendMessage(event) {
         method: "POST",
         body: JSON.stringify({
           user_input: userMessage,
+          user_id: userId
         }),
         headers: {
           "Content-type": "application/json"
