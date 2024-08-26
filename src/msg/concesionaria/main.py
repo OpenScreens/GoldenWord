@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 import os
 import logging
 from openai import OpenAI
+import pandas as pd
+from buying_price import get_price
 
 app = flask.Flask(__name__)
 app.debug = True
@@ -85,15 +87,41 @@ def classify_prompt(user_input):
 def receive_msg():
     data = request.json
     user_input = data.get('user_input')
+    user_id = data.get('user_id')
 
-    if not user_input:
-        response = jsonify({"error": "No user input provided"})
+    if not user_input or not user_id:
+        response = jsonify({"error": "No user input or user ID provided"})
         return response, 400
 
-    prompt_type = classify_prompt(user_input)
+    if user_id not in conversations:
+        conversations[user_id] = {"state": "initial"}
 
-    response = jsonify({"response": f"{prompt_type}"})
-    return response, 200
+    user_state = conversations[user_id]
+
+    if user_state["state"] == "initial":
+        prompt_type = classify_prompt(user_input)
+
+        if prompt_type == "buying_price":
+            user_state["state"] = "asking_details"
+            return jsonify({"response": "Please provide the brand, model, and year of the car you are interested in (example: 'Toyota Corolla 2020')"}), 200
+        elif prompt_type == "loans":
+            return jsonify({"response": "We don't accept loans"}), 200
+        elif prompt_type in ["selling_price", "selling_process", "buying_process"]:
+            return jsonify({"response": f"We are working on {prompt_type}"}), 200
+        else:
+            return jsonify({"response": "We don't understand your prompt"}), 200
+
+    elif user_state["state"] == "asking_details":
+        try:
+            brand, model, year = user_input.split()
+            brand, model, price = get_price(brand.upper(), model.upper(), int(year))
+            user_state["state"] = "initial"
+            return jsonify({"response": f"The price for a {brand} {model} from {year} is: {price}"}), 200
+        except ValueError:
+            return jsonify({"response": "Invalid input. Please provide the brand, model, and year separated by spaces."}), 400
+
+    response = jsonify({"response": "An unexpected error occurred"})
+    return response, 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
