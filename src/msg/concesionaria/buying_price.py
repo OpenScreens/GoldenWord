@@ -15,19 +15,21 @@ def get_price(marca_input, modelo_input, año_input):
 
     resultado = df[(df['Desc. marca'] == marca) & (df['Desc. Modelo'] == modelo)]
     
-    if not resultado.empty:
-        if año_str in resultado.columns:
+    valid_years = [col for col in resultado.columns if col.isdigit() and pd.notna(resultado[col].values[0])]
+
+    if valid_years:
+        if año_str in valid_years:
             precio = resultado[año_str].values[0]
-            if pd.notna(precio):
-                return marca, modelo, float(precio) 
-            else:
-                return 'There is no price available for that year.'
-    else:
-        return 'There is no vehicle specified.'
+            return marca, modelo, float(precio), año_str, "exact"
+        else:
+            near_year = min(valid_years, key=lambda x: abs(int(x) - int(año_str)))
+            precio = resultado[near_year].values[0]
+            return marca, modelo, float(precio), near_year, "approximate"
+        
+    return marca, modelo, -1, None, "no_price"
 
 '''
-prompt = 'i want a volkswagen gol 2004, what is the price?'
-marca, modelo, año = "volkswagen", "gol", "2004"
+marca, modelo, año = "honda", "civic", "2008"
 precio = get_price(marca.upper(), modelo.upper(), int(año))
 print(f"El precio para un {marca.capitalize()} {modelo.capitalize()} del año {año} es: {precio}")
 '''
