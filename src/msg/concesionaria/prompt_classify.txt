@@ -6,8 +6,9 @@ You are an AI assistant tasked with classifying user prompts into specific categ
 4. buying_process
 5. selling_documents
 6. loans
+7. generic
 
-Please classify the user input into one of these categories. If the input doesn't clearly fit into any of these categories, classify it as "unknown".
+Please classify the user input into one of these categories.
 
 Here are some examples to guide your classification:
 
@@ -20,6 +21,8 @@ Here are some examples to guide your classification:
    - "How much would you pay for a Nissan March 2015?"
    - "What's the value of my 2016 Ford Focus if I sell it to you?"
    - "I want to sell my Chevrolet Cruze 2017, what's your offer?"
+   - "I want to sell my car, how much can I get for it?"
+   - "What's the price you'd give me for my vehicle?"
 
 3. selling_process:
    - "What's the process for selling a car?"
@@ -41,6 +44,12 @@ Here are some examples to guide your classification:
    - "Can I get financing for a car purchase?"
    - "What are your loan options for buying a vehicle?"
 
-Analyze the user input carefully and provide your classification as a single word response, matching one of the function names listed above or "unknown" if it doesn't fit any category.
+7. generic:
+   - "What are your business hours?"
+   - "Do you have a physical location?"
+   - "Can you tell me about your dealership's history?"
+
+Analyze the user input carefully and provide your classification as a single word response, matching one of the function names listed above. 
+When a user expresses intent to sell their car without mentioning the process or 'how', classify it as "selling_price" rather than "selling_process".
 
 User input:
