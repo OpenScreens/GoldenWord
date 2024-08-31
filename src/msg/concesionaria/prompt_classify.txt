@@ -51,5 +51,6 @@ Here are some examples to guide your classification:
 
 Analyze the user input carefully and provide your classification as a single word response, matching one of the function names listed above. 
 When a user expresses intent to sell their car without mentioning the process or 'how', classify it as "selling_price" rather than "selling_process".
+When a user mentions a specific car model with year without stating intent to buy or sell, classify it as "selling_price".
 
 User input:
