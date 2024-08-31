@@ -1,5 +1,6 @@
 import flask
 from flask import request, jsonify
+from flask import json
 import requests
 from dotenv import load_dotenv
 import os
@@ -25,6 +26,7 @@ conversations = {}
 
 PROMPT_CLASSIFY_MODEL = 'gpt-4'
 PROMPT_GENERIC_MODEL = 'gpt-4'
+PROMPT_COLLECTVARS_MODEL = 'gpt-4'
 
 client = OpenAI(api_key=openai_token)
 session = requests.Session()
@@ -89,6 +91,11 @@ def answer_generic(user_input):
     response = call_chatgpt(prompt_generic,[user_input], model=PROMPT_GENERIC_MODEL)
     return response.content.strip().lower()
 
+def collect_vars(user_input):
+    prompt_collectvars = load_prompt("prompt_collectvars.txt")
+    response = call_chatgpt(prompt_collectvars, [user_input], model=PROMPT_COLLECTVARS_MODEL)
+    return response.content.strip().lower()
+
 @app.route('/', methods=["POST"])
 def receive_msg():
     data = request.json
@@ -110,9 +117,41 @@ def receive_msg():
         if prompt_type == "buying_price": ##perspectiva del usuario, el compra un auto es x aca
             user_state["state"] = "asking_details"
             return jsonify({"response": "Please provide the brand, model, and year of the car you are interested in (example: 'Toyota Corolla 2020')"}), 200
+        
         elif prompt_type == "selling_price":
-            user_state["state"] = "asking_selling_details"
-            return jsonify({"response": "To provide you with an accurate selling price, please tell me about the details of your car. What is the brand, model, and year of your vehicle? (For example: 'Toyota Corolla 2020')"})
+            json_response = collect_vars(user_input)
+            print(json_response)
+            car_details = json.loads(json_response)
+
+            brand = car_details["brand"]
+            model = car_details["model"]
+            year = car_details["year"]
+            mileage_magnitude = car_details["mileage_magnitude"]
+            mileage_unit = car_details["mileage_unit"]
+            print(brand, model, year, mileage_magnitude)
+            
+            missing_info = []
+            for field, value in [("brand", brand), ("model", model), ("year", year), ("mileage", mileage_magnitude)]:
+                if value == "":
+                    missing_info.append(field)
+            
+            if missing_info:
+                missing_info_str = ", ".join(missing_info)
+                return jsonify({"response": f"Please provide the {missing_info_str}"}), 200
+            
+            brand, model, price, year, status = get_price(car_details["brand"].upper(), car_details["model"].upper(), int(car_details["year"]))
+            
+            depreciation_factor = 1 - (0.05 * float(mileage_magnitude) / 100000)
+            calculated_price = price * max(depreciation_factor, 0.1)
+            
+            if status == 'exact':
+                response = f"Based on the details provided for your {brand} {model} ({car_details['year']}) with {mileage_magnitude} {mileage_unit}, we can provide an estimated selling price of {calculated_price}."
+            elif status == 'approximate':
+                response = f"We don't have the exact price for your {brand} {model} from {car_details['year']}, but we have a ({year}) and considering {mileage_magnitude} {mileage_unit}, we estimated a selling price of {calculated_price}."
+            elif status == 'no_price':
+                response = f"We don't have price available for your {brand} {model} ({car_details['year']}) with {mileage_magnitude} {mileage_unit}."
+            return jsonify({"response": response}), 200
+        
         elif prompt_type == "loans":
             return jsonify({"response": "We don't accept loans"}), 200
         elif prompt_type == "generic":
@@ -132,25 +171,7 @@ def receive_msg():
         user_state["state"] = "next_step_sell"
         user_state["car_details"] = {"brand": brand, "model": model, "year": year}
         return jsonify({"response": "Thank you for providing the details of your car. To give you an accurate selling price, we also need to know the mileage of your vehicle. How many kilometers has your car been driven? Please provide a number without 'km' or any punctuation. For example: 200000"})
-   
-    elif user_state["state"] == "next_step_sell":
-        km = user_input
-        car_details = user_state["car_details"]
-        print(car_details["brand"], car_details["model"], car_details["year"], km)
-        user_state["state"] = "initial" 
-        brand, model, price, year, status = get_price(car_details["brand"].upper(), car_details["model"].upper(), int(car_details["year"]))
-        
-        depreciation_factor = 1 - (0.05 * float(km) / 100000)
-        calculated_price = price * max(depreciation_factor, 0.1)
-        
-        if status == 'exact':
-            response = f"Based on the details provided for your {brand} {model} ({car_details['year']}) with {km} km, we can provide an estimated selling price of {calculated_price}."
-        elif status == 'approximate':
-            response = f"We don't have the exact price for your {brand} {model} from {car_details['year']}, but we have a ({year}) and considering {km} km, we estimated a selling price of {calculated_price}."
-        elif status == 'no_price':
-            response = f"We don't have price available for your {brand} {model} ({car_details['year']}) with {km} km."
-        return jsonify({"response": response}), 200
-    
+
     elif user_state["state"] == "asking_details":
         try:
             brand, model, year = user_input.split()
