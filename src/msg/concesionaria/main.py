@@ -8,6 +8,7 @@ import logging
 from openai import OpenAI
 import pandas as pd
 from buying_price import get_price
+from twilio.twiml.messaging_response import MessagingResponse
 
 app = flask.Flask(__name__)
 app.debug = True
@@ -183,6 +184,22 @@ def receive_msg():
 
     response = jsonify({"response": "An unexpected error occurred"})
     return response, 500
+
+@app.route("/whatsapp", methods=['POST'])
+def whatsapp_reply():
+    incoming_msg = request.values.get('Body', '').lower()
+    resp = MessagingResponse()
+    msg = resp.message()
+    data = {
+        "user_input": incoming_msg,
+        "user_id": 123
+    }
+    response = requests.post('http://localhost:5000/', json=data)
+    response_data = response.json()
+    msg.body(response_data.get('response', 'An error occurred'))
+
+    return str(resp)
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
