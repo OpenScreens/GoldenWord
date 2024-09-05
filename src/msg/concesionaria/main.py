@@ -2,20 +2,18 @@ import flask
 from flask import request, jsonify
 from flask import json
 import requests
-from dotenv import load_dotenv
 import os
 import logging
 from openai import OpenAI
 import pandas as pd
 from buying_price import get_price
-from twilio.twiml.messaging_response import MessagingResponse
 import tiktoken
 import requests
 import json
+from env import OPENAI_TOKEN, WHATSAPP_VERIFY_TOKEN, WPP_AUTH_TOKEN
 
 app = flask.Flask(__name__)
 app.debug = True
-load_dotenv()
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger(__name__)
@@ -23,10 +21,7 @@ logger.setLevel(logging.DEBUG)
 file_handler = logging.FileHandler(APP_DIR+'/concesionaria.log')
 logger.addHandler(file_handler)
 
-VERIFY_TOKEN = os.getenv('WHATSAPP_VERIFY_TOKEN')
-auth_token_wpp = os.getenv('WPP_auth_token')
 
-openai_token = os.getenv('OPENAI_TOKEN')
 openai_model = "gpt-4"
 error_prefix = ""
 conversations = {}
@@ -35,7 +30,7 @@ PROMPT_CLASSIFY_MODEL = 'gpt-4'
 PROMPT_GENERIC_MODEL = 'gpt-4'
 PROMPT_COLLECTVARS_MODEL = 'gpt-4'
 
-client = OpenAI(api_key=openai_token)
+client = OpenAI(api_key=OPENAI_TOKEN)
 session = requests.Session()
 
 BRANCHES = {
@@ -224,7 +219,7 @@ def whatsapp_reply():
     if request.method == 'GET':
         token_sent = request.args.get('hub.verify_token')
         challenge = request.args.get('hub.challenge')
-        if token_sent == VERIFY_TOKEN:
+        if token_sent == WHATSAPP_VERIFY_TOKEN:
             return str(challenge)
         return 'Token de verificación no válido', 403
     elif request.method == 'POST':
@@ -275,7 +270,7 @@ def send_msg(number, msg):
     
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {auth_token_wpp}'
+        'Authorization': f'Bearer {WPP_AUTH_TOKEN}'
         }
 
     response = requests.request("POST", url, headers=headers, data=payload)
