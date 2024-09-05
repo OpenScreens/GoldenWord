@@ -9,6 +9,9 @@ from openai import OpenAI
 import pandas as pd
 from buying_price import get_price
 from twilio.twiml.messaging_response import MessagingResponse
+import tiktoken
+import requests
+import json
 
 app = flask.Flask(__name__)
 app.debug = True
@@ -19,6 +22,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 file_handler = logging.FileHandler(APP_DIR+'/concesionaria.log')
 logger.addHandler(file_handler)
+
+VERIFY_TOKEN = os.getenv('WHATSAPP_VERIFY_TOKEN')
+auth_token_wpp = os.getenv('WPP_auth_token')
 
 openai_token = os.getenv('OPENAI_TOKEN')
 openai_model = "gpt-4"
@@ -31,6 +37,33 @@ PROMPT_COLLECTVARS_MODEL = 'gpt-4'
 
 client = OpenAI(api_key=openai_token)
 session = requests.Session()
+
+BRANCHES = {
+    "buying_price": [
+        '"I want to buy a Nissan March 2015, how much would that be?"',
+        '"What is the price of a 2018 Toyota Corolla?"',
+        '"How much does a Honda Civic 2020 cost?"'
+    ],
+    "selling_price": [
+        '"What is the selling price of my 2018 Honda Civic?"',
+        '"I want to sell my honda civic 2008"'
+    ],
+    "selling_process": [
+        '"What documents do I need to sell my car?"'
+    ],
+    "buying_process": [
+        '"How do I buy a car?"'
+    ],
+    "selling_documents": [
+        '"What paperwork is required to sell a vehicle?"'
+    ],
+    "loans": [
+        '"Can I get a loan to buy a car?"'
+    ],
+    "generic": [
+        '"Tell me about car insurance."'
+    ]
+}
 
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
@@ -66,7 +99,7 @@ def call_chatgpt(prompt, messages, response_format=None, tokens=None, functions=
         messages=conversation,
         functions=functions,
         function_call=function_call,
-        logit_bias={96974: -100}
+        logit_bias=get_logit_bias()
     )
     
     logger.debug(f"Call Chat GPT Response Details: {completion.choices[0].message.content}")
@@ -114,6 +147,7 @@ def receive_msg():
 
     if user_state["state"] == "initial":
         prompt_type = classify_prompt(user_input)
+        print (prompt_type)
 
         if prompt_type == "buying_price": ##perspectiva del usuario, el compra un auto es x aca
             user_state["state"] = "asking_details"
@@ -185,21 +219,87 @@ def receive_msg():
     response = jsonify({"response": "An unexpected error occurred"})
     return response, 500
 
-@app.route("/whatsapp", methods=['POST'])
+@app.route("/whatsapp", methods=['GET', 'POST'])
 def whatsapp_reply():
-    incoming_msg = request.values.get('Body', '').lower()
-    resp = MessagingResponse()
-    msg = resp.message()
-    data = {
-        "user_input": incoming_msg,
-        "user_id": 123
-    }
-    response = requests.post('http://localhost:5000/', json=data)
-    response_data = response.json()
-    msg.body(response_data.get('response', 'An error occurred'))
+    if request.method == 'GET':
+        token_sent = request.args.get('hub.verify_token')
+        challenge = request.args.get('hub.challenge')
+        if token_sent == VERIFY_TOKEN:
+            return str(challenge)
+        return 'Token de verificación no válido', 403
+    elif request.method == 'POST':
+        incoming_data = request.get_json()
+        print(f"Data received: {incoming_data}") 
+        
+        if incoming_data and 'entry' in incoming_data:
+            entry = incoming_data['entry'][0]
+            changes = entry.get('changes', [])
+            if changes:
+                value = changes[0].get('value', {})
+                messages = value.get('messages', [])
+                if messages:
+                    message = messages[0]
+                    msg_body = message['text']['body']
+                    sender_id = message['from']
+                    sender_name = value['contacts'][0]['profile']['name']
+                    print(f"Mensaje recibido de {sender_name} ({sender_id}): {msg_body}")
+                    
+                    if msg_body and sender_id:
+                        data = {
+                            "user_input": msg_body,
+                            "user_id": sender_id
+                        }
+                        response = requests.post('http://localhost:5000/', json=data)
+                        response_data = response.json()
+                        response_final = (response_data.get('response', 'An error occurred'))
+                        try:
+                            send_msg(sender_id,response_final)
+                        except Exception as e:
+                            print(e)
+                            return jsonify({"response": "An unexpected error occurred"}), 500
+                  
+                    return ('Ok'), 200
+        return jsonify({"status": "error", "message": "No message found"}), 400
+ 
 
-    return str(resp)
+def send_msg(number, msg):
+    url = "https://graph.facebook.com/v20.0/262736246918040/messages"
+    payload = json.dumps({
+        "messaging_product": "whatsapp",
+        "to": "543876056178",
+        "type": "text",
+        "text": {
+            "body": msg
+        }
+    })
+    
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {auth_token_wpp}'
+        }
 
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
+
+
+
+def get_logit_bias():
+    logit_bias = {}
+    encoding = tiktoken.encoding_for_model("gpt-4")
+    for branch, prompts in BRANCHES.items():
+        for prompt in prompts:
+            tokens = encoding.encode(prompt)
+            #print(f"Branch: {branch}, {prompt} Token: {tokens[0]}, weight:100")
+            logit_bias[tokens[0]] = 100
+        for other_branch in BRANCHES.keys():
+            if other_branch != branch:
+                for other_prompt in BRANCHES[other_branch]:
+                    other_tokens = encoding.encode(other_prompt)
+                    logit_bias[other_tokens[0]] = -100
+                    #print(f"Branch: {branch}, {prompt} Token: {tokens[0]}, weight -100")
+
+    return logit_bias
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
