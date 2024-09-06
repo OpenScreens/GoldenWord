@@ -1,3 +1,5 @@
 openai
 pandas
 rapidfuzz
+tiktoken
+flask
