@@ -10,7 +10,7 @@ from buying_price import get_price
 import tiktoken
 import requests
 import json
-from env import OPENAI_TOKEN, WHATSAPP_VERIFY_TOKEN, WPP_AUTH_TOKEN
+from env import OPENAI_TOKEN, WHATSAPP_VERIFY_TOKEN, WPP_AUTH_TOKEN, FB_AUTH_TOKEN
 
 app = flask.Flask(__name__)
 app.debug = True
@@ -172,7 +172,7 @@ def receive_msg():
             brand, model, price, year, status = get_price(car_details["brand"].upper(), car_details["model"].upper(), int(car_details["year"]))
             
             depreciation_factor = 1 - (0.05 * float(mileage_magnitude) / 100000)
-            calculated_price = price * max(depreciation_factor, 0.1)
+            calculated_price = price * max(depreciation_factor, 0.1) * 3
             
             if status == 'exact':
                 response = f"Based on the details provided for your {brand} {model} ({car_details['year']}) with {mileage_magnitude} {mileage_unit}, we can provide an estimated selling price of {calculated_price}."
@@ -248,7 +248,8 @@ def whatsapp_reply():
                         response_data = response.json()
                         response_final = (response_data.get('response', 'An error occurred'))
                         try:
-                            send_msg(sender_id,response_final)
+                            sender_id = sender_id.replace("9","",1)
+                            send_msg_wpp(sender_id,response_final)
                         except Exception as e:
                             print(e)
                             return jsonify({"response": "An unexpected error occurred"}), 500
@@ -257,11 +258,11 @@ def whatsapp_reply():
         return jsonify({"status": "error", "message": "No message found"}), 400
  
 
-def send_msg(number, msg):
+def send_msg_wpp(number, msg):
     url = "https://graph.facebook.com/v20.0/262736246918040/messages"
     payload = json.dumps({
         "messaging_product": "whatsapp",
-        "to": "543876056178",
+        "to": number,
         "type": "text",
         "text": {
             "body": msg
@@ -277,6 +278,49 @@ def send_msg(number, msg):
 
     print(response.text)
 
+@app.route('/facebook', methods=['GET'])
+def verify():
+    if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.verify_token') == VERIFY_TOKEN:
+        return request.args.get('hub.challenge'), 200
+    return 'Verificación fallida', 403
+
+@app.route('/facebook', methods=['POST'])
+def webhook():
+    data = request.get_json()
+    print(data)
+    if 'entry' in data:
+        for entry in data['entry']:
+            if 'messaging' in entry:
+                for event in entry['messaging']:
+                    if 'message' in event:
+                        sender_id = event['sender']['id']
+                        message_text = event['message']['text']
+                        handle_message(sender_id, message_text)
+    return "Evento recibido", 200
+
+def handle_message(sender_id, msg_body):
+    data = {
+        "user_input": msg_body,
+        "user_id": sender_id
+    }
+    response = requests.post('http://localhost:5000/', json=data)
+    response_data = response.json()
+    response_final = (response_data.get('response', 'An error occurred'))
+    snd_msg_facebook(sender_id, response_final)
+
+def snd_msg_facebook(recipient_id, message_text):
+    import requests
+    url = 'https://graph.facebook.com/v11.0/me/messages'
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    data = {
+        'recipient': {'id': recipient_id},
+        'message': {'text': message_text},
+        'access_token': FB_AUTH_TOKEN
+    }
+    response = requests.post(url, json=data, headers=headers)
+    print(f'Status: {response.status_code}, Response: {response.json()}')
 
 
 def get_logit_bias():
