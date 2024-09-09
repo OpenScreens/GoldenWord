@@ -11,6 +11,7 @@ import tiktoken
 import requests
 import json
 from env import OPENAI_TOKEN, WHATSAPP_VERIFY_TOKEN, WPP_AUTH_TOKEN, FB_AUTH_TOKEN
+from OpenSSL import SSL
 
 app = flask.Flask(__name__)
 app.debug = True
@@ -251,7 +252,7 @@ def whatsapp_reply():
                             "user_input": msg_body,
                             "user_id": sender_id
                         }
-                        response = requests.post('http://localhost:5000/', json=data)
+                        response = requests.post('http://localhost:80/', json=data)
                         response_data = response.json()
                         response_final = (response_data.get('response', 'An error occurred'))
                         try:
@@ -310,7 +311,7 @@ def handle_message(sender_id, msg_body):
         "user_input": msg_body,
         "user_id": sender_id
     }
-    response = requests.post('http://localhost:5000/', json=data)
+    response = requests.post('http://localhost:80/', json=data)
     response_data = response.json()
     response_final = (response_data.get('response', 'An error occurred'))
     snd_msg_facebook(sender_id, response_final)
@@ -348,4 +349,6 @@ def get_logit_bias():
     return logit_bias
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    context = ('/etc/letsencrypt/live/serverh.openscreens.net/fullchain.pem',
+    '/etc/letsencrypt/live/serverh.openscreens.net/privkey.pem')
+    app.run(host='0.0.0.0', port=80)
