@@ -255,7 +255,7 @@ def whatsapp_reply():
                             return jsonify({"response": "An unexpected error occurred"}), 500
                   
                     return ('Ok'), 200
-        return jsonify({"status": "error", "message": "No message found"}), 400
+        return jsonify({"status": "error", "message": "No message found"}), 200
  
 
 def send_msg_wpp(number, msg):
@@ -280,7 +280,7 @@ def send_msg_wpp(number, msg):
 
 @app.route('/facebook', methods=['GET'])
 def verify():
-    if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.verify_token') == VERIFY_TOKEN:
+    if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.verify_token') == WHATSAPP_VERIFY_TOKEN:
         return request.args.get('hub.challenge'), 200
     return 'Verificación fallida', 403
 
