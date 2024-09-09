@@ -70,6 +70,13 @@ def add_cors_headers(response):
 def after_request(response):
     return add_cors_headers(response)
 
+@app.route('/')
+def index():
+	with open("../chatpopup/chat.html") as f:
+		html = f.read()
+	return html
+
+
 def call_chatgpt(prompt, messages, response_format=None, tokens=None, functions=None, function_call=None, model=None):
     if model is None:
         raise Exception("No model assigned for GPT")
