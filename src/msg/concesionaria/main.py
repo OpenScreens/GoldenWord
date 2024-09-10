@@ -257,7 +257,7 @@ def whatsapp_reply():
                         response_final = (response_data.get('response', 'An error occurred'))
                         try:
                             sender_id = sender_id.replace("9","",1)
-                            send_msg_wpp(sender_id,response_final)
+                            send_msg_wpp(sender_id,response_final,message)
 
                             headers = {
                                 'Authorization': f'Bearer {WPP_AUTH_TOKEN}',
@@ -266,7 +266,7 @@ def whatsapp_reply():
                             data = {
                                 "messaging_product": "whatsapp",
                                 "status": "read",
-                                "message_id": message.id,
+                                "message_id": message['id'],
                             }
                             response = requests.post("https://graph.facebook.com/v20.0/262736246918040/messages", headers=headers, json=data)
                         except Exception as e:
@@ -277,7 +277,7 @@ def whatsapp_reply():
         return jsonify({"status": "error", "message": "No message found"}), 200
  
 
-def send_msg_wpp(number, msg):
+def send_msg_wpp(number, msg, message):
     url = "https://graph.facebook.com/v20.0/262736246918040/messages"
     payload = json.dumps({
         "messaging_product": "whatsapp",
@@ -285,7 +285,10 @@ def send_msg_wpp(number, msg):
         "type": "text",
         "text": {
             "body": msg
-        }
+        },
+        "context": {
+          'message_id': message['id'],
+        },
     })
     
     headers = {
