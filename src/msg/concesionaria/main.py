@@ -60,6 +60,17 @@ BRANCHES = {
     ]
 }
 
+def get_logit_bias():
+    logit_bias = {}
+    encoding = tiktoken.encoding_for_model("gpt-4")
+    for branch, sentences in BRANCHES.items():
+            tokens = encoding.encode(branch)
+            logit_bias[tokens[0]] = 10
+   
+    logger.debug(f"Logit bias: {logit_bias}")
+    return logit_bias
+
+
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST'
@@ -77,7 +88,7 @@ def index():
 	return html
 
 
-def call_chatgpt(prompt, messages, response_format=None, tokens=None, functions=None, function_call=None, model=None):
+def call_chatgptA(prompt, messages, response_format=None, tokens=None, functions=None, function_call=None, model=None):
     if model is None:
         raise Exception("No model assigned for GPT")
     if response_format is None:
@@ -101,7 +112,37 @@ def call_chatgpt(prompt, messages, response_format=None, tokens=None, functions=
         messages=conversation,
         functions=functions,
         function_call=function_call,
-        logit_bias=get_logit_bias()
+        logit_bias = get_logit_bias()
+    )
+    
+    logger.debug(f"Call Chat GPT Response Details: {completion.choices[0].message.content}")
+    return completion.choices[0].message
+
+
+def call_chatgptB(prompt, messages, response_format=None, tokens=None, functions=None, function_call=None, model=None):
+    if model is None:
+        raise Exception("No model assigned for GPT")
+    if response_format is None:
+        response_format = "text"
+    if model == "gpt-4":
+        response_format = "text"
+    
+    conversation = [{"role": "system", "content": prompt}]
+    for i, message in enumerate(messages):
+        if i != 0:
+            conversation.append({"role": "assistant", "content": "[..]"})
+        conversation.append({"role": "user", "content": message})
+    
+    logger.debug(f"Call Chat GPT Request Details: content: {conversation}, response_format: {response_format}")
+    
+    completion = client.chat.completions.create(
+        model=model,
+        temperature=0,
+        seed=1,
+        response_format={"type": response_format},
+        messages=conversation,
+        functions=functions,
+        function_call=function_call
     )
     
     logger.debug(f"Call Chat GPT Response Details: {completion.choices[0].message.content}")
@@ -119,17 +160,17 @@ def reload_prompts():
 
 def classify_prompt(user_input):
     prompt_classify = load_prompt('prompt_classify.txt')
-    response = call_chatgpt(prompt_classify, [user_input], model=PROMPT_CLASSIFY_MODEL)
+    response = call_chatgptA(prompt_classify, [user_input], model=PROMPT_CLASSIFY_MODEL)
     return response.content.strip().lower()
 
 def answer_generic(user_input):
     prompt_generic = load_prompt("prompt_generic.txt")
-    response = call_chatgpt(prompt_generic,[user_input], model=PROMPT_GENERIC_MODEL)
+    response = call_chatgptB(prompt_generic,[user_input], model=PROMPT_GENERIC_MODEL)
     return response.content.strip().lower()
 
 def collect_vars(user_input):
     prompt_collectvars = load_prompt("prompt_collectvars.txt")
-    response = call_chatgpt(prompt_collectvars, [user_input], model=PROMPT_COLLECTVARS_MODEL)
+    response = call_chatgptB(prompt_collectvars, [user_input], model=PROMPT_COLLECTVARS_MODEL)
     return response.content.strip().lower()
 
 @app.route('/', methods=["POST"])
@@ -343,24 +384,6 @@ def snd_msg_facebook(recipient_id, message_text):
     }
     response = requests.post(url, json=data, headers=headers)
     print(f'Status: {response.status_code}, Response: {response.json()}')
-
-
-def get_logit_bias():
-    logit_bias = {}
-    encoding = tiktoken.encoding_for_model("gpt-4")
-    for branch, prompts in BRANCHES.items():
-        for prompt in prompts:
-            tokens = encoding.encode(prompt)
-            #print(f"Branch: {branch}, {prompt} Token: {tokens[0]}, weight:100")
-            logit_bias[tokens[0]] = 100
-        for other_branch in BRANCHES.keys():
-            if other_branch != branch:
-                for other_prompt in BRANCHES[other_branch]:
-                    other_tokens = encoding.encode(other_prompt)
-                    logit_bias[other_tokens[0]] = -100
-                    #print(f"Branch: {branch}, {prompt} Token: {tokens[0]}, weight -100")
-
-    return logit_bias
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
