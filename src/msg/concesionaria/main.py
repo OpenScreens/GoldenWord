@@ -231,7 +231,8 @@ def whatsapp_reply():
         return 'Token de verificación no válido', 403
     elif request.method == 'POST':
         incoming_data = request.get_json()
-        print(f"Data received: {incoming_data}") 
+        print(f"Data received: {incoming_data}")
+        logger.info(f"Data Incoming: {incoming_data}")
         
         if incoming_data and 'entry' in incoming_data:
             entry = incoming_data['entry'][0]
@@ -257,6 +258,17 @@ def whatsapp_reply():
                         try:
                             sender_id = sender_id.replace("9","",1)
                             send_msg_wpp(sender_id,response_final)
+
+                            headers = {
+                                'Authorization': f'Bearer {WPP_AUTH_TOKEN}',
+                                'Content-Type': 'application/json'
+                            }
+                            data = {
+                                "messaging_product": "whatsapp",
+                                "status": "read",
+                                "message_id": message.id,
+                            }
+                            response = requests.post("https://graph.facebook.com/v20.0/262736246918040/messages", headers=headers, json=data)
                         except Exception as e:
                             print(e)
                             return jsonify({"response": "An unexpected error occurred"}), 500
