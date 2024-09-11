@@ -149,26 +149,34 @@ def receive_msg():
     data = request.json
     user_input = data.get('user_input')
     user_id = data.get('user_id')
+    print (user_id)
 
     if not user_input or not user_id:
         response = jsonify({"error": "No user input or user ID provided"})
         return response, 400
 
     if user_id not in conversations:
-        conversations[user_id] = {"state": "initial"}
+        conversations[user_id] = {"state": "initial", "conversation": []}
 
     user_state = conversations[user_id]
+    user_state['conversation'].append(user_input) 
 
     if user_state["state"] == "initial":
         prompt_type = classify_prompt(user_input)
-        print (prompt_type)
+        user_state['state'] = 'classify'
+        user_state['branch'] = prompt_type
+        logger.debug(user_state)
+        print(user_state)
 
+    if user_state['state'] == "classify" or user_state['state'] == 'asking_missing_info':
+        prompt_type = user_state['branch']
+        
         if prompt_type == "buying_price": ##perspectiva del usuario, el compra un auto es x aca
             user_state["state"] = "asking_details"
             return jsonify({"response": "Please provide the brand, model, and year of the car you are interested in (example: 'Toyota Corolla 2020')"}), 200
         
         elif prompt_type == "selling_price":
-            json_response = collect_vars(user_input)
+            json_response = collect_vars(" ".join(user_state['conversation']))
             print(json_response)
             car_details = json.loads(json_response)
 
@@ -186,6 +194,7 @@ def receive_msg():
             
             if missing_info:
                 missing_info_str = ", ".join(missing_info)
+                user_state['state'] = "asking_missing_info"
                 return jsonify({"response": f"Please provide the {missing_info_str}"}), 200
             
             brand, model, price, year, status = get_price(car_details["brand"].upper(), car_details["model"].upper(), int(car_details["year"]))
@@ -199,27 +208,27 @@ def receive_msg():
                 response = f"We don't have the exact price for your {brand} {model} from {car_details['year']}, but we have a ({year}) and considering {mileage_magnitude} {mileage_unit}, we estimated a selling price of {calculated_price}."
             elif status == 'no_price':
                 response = f"We don't have price available for your {brand} {model} ({car_details['year']}) with {mileage_magnitude} {mileage_unit}."
+            user_state['state'] = 'initial'
             return jsonify({"response": response}), 200
         
         elif prompt_type == "loans":
+            user_state['state'] = 'initial'
             return jsonify({"response": "We don't accept loans"}), 200
         elif prompt_type == "generic":
+            user_state['state'] = 'initial'
             response = answer_generic(user_input)
             return jsonify({"response":response})
         elif prompt_type == "selling_process":
+            user_state['state'] = 'initial'
             return jsonify({"response":"When selling a car, you need a few documents." +
                              "First, the vehicle title or ownership document is essential as it proves you own the car."+
                                "You'll also need a bill of sale, which outlines the sale terms, including price and date."})
         elif prompt_type in ["selling_price", "buying_process"]:
+            user_state['state'] = 'initial'
             return jsonify({"response": f"We are working on {prompt_type}"}), 200
         else:
+            user_state['state'] = 'initial'
             return jsonify({"response": "We don't understand your prompt"}), 200
-
-    elif user_state["state"] == "asking_selling_details":
-        brand, model, year = user_input.split()
-        user_state["state"] = "next_step_sell"
-        user_state["car_details"] = {"brand": brand, "model": model, "year": year}
-        return jsonify({"response": "Thank you for providing the details of your car. To give you an accurate selling price, we also need to know the mileage of your vehicle. How many kilometers has your car been driven? Please provide a number without 'km' or any punctuation. For example: 200000"})
 
     elif user_state["state"] == "asking_details":
         try:
@@ -229,9 +238,8 @@ def receive_msg():
             return jsonify({"response": f"The price for a {brand} {model} from {year} is: {price}"}), 200
         except ValueError:
             return jsonify({"response": "Invalid input. Please provide the brand, model, and year separated by spaces."}), 400
-
     response = jsonify({"response": "An unexpected error occurred"})
-    return response, 500
+    return response, 200
 
 @app.route("/whatsapp", methods=['GET', 'POST'])
 def whatsapp_reply():
