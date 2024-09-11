@@ -60,12 +60,13 @@ BRANCHES = {
     ]
 }
 
-def get_logit_bias():
+def get_logit_bias(branches):
     logit_bias = {}
     encoding = tiktoken.encoding_for_model("gpt-4")
-    for branch, sentences in BRANCHES.items():
+    for branch, sentences in branches.items():
             tokens = encoding.encode(branch)
-            logit_bias[tokens[0]] = 10
+            for token in tokens:
+                logit_bias[token] = 10
    
     logger.debug(f"Logit bias: {logit_bias}")
     return logit_bias
@@ -88,7 +89,7 @@ def index():
 	return html
 
 
-def call_chatgptA(prompt, messages, response_format=None, tokens=None, functions=None, function_call=None, model=None):
+def call_chatgpt(prompt, messages, response_format=None, tokens=None, functions=None, function_call=None, model=None, logit_bias=True):
     if model is None:
         raise Exception("No model assigned for GPT")
     if response_format is None:
@@ -112,37 +113,7 @@ def call_chatgptA(prompt, messages, response_format=None, tokens=None, functions
         messages=conversation,
         functions=functions,
         function_call=function_call,
-        logit_bias = get_logit_bias()
-    )
-    
-    logger.debug(f"Call Chat GPT Response Details: {completion.choices[0].message.content}")
-    return completion.choices[0].message
-
-
-def call_chatgptB(prompt, messages, response_format=None, tokens=None, functions=None, function_call=None, model=None):
-    if model is None:
-        raise Exception("No model assigned for GPT")
-    if response_format is None:
-        response_format = "text"
-    if model == "gpt-4":
-        response_format = "text"
-    
-    conversation = [{"role": "system", "content": prompt}]
-    for i, message in enumerate(messages):
-        if i != 0:
-            conversation.append({"role": "assistant", "content": "[..]"})
-        conversation.append({"role": "user", "content": message})
-    
-    logger.debug(f"Call Chat GPT Request Details: content: {conversation}, response_format: {response_format}")
-    
-    completion = client.chat.completions.create(
-        model=model,
-        temperature=0,
-        seed=1,
-        response_format={"type": response_format},
-        messages=conversation,
-        functions=functions,
-        function_call=function_call
+        logit_bias=get_logit_bias(BRANCHES) if logit_bias else None
     )
     
     logger.debug(f"Call Chat GPT Response Details: {completion.choices[0].message.content}")
@@ -160,17 +131,17 @@ def reload_prompts():
 
 def classify_prompt(user_input):
     prompt_classify = load_prompt('prompt_classify.txt')
-    response = call_chatgptA(prompt_classify, [user_input], model=PROMPT_CLASSIFY_MODEL)
+    response = call_chatgpt(prompt_classify, [user_input], model=PROMPT_CLASSIFY_MODEL, logit_bias=True)
     return response.content.strip().lower()
 
 def answer_generic(user_input):
     prompt_generic = load_prompt("prompt_generic.txt")
-    response = call_chatgptB(prompt_generic,[user_input], model=PROMPT_GENERIC_MODEL)
+    response = call_chatgpt(prompt_generic,[user_input], model=PROMPT_GENERIC_MODEL, logit_bias=False)
     return response.content.strip().lower()
 
 def collect_vars(user_input):
     prompt_collectvars = load_prompt("prompt_collectvars.txt")
-    response = call_chatgptB(prompt_collectvars, [user_input], model=PROMPT_COLLECTVARS_MODEL)
+    response = call_chatgpt(prompt_collectvars, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)
     return response.content.strip().lower()
 
 @app.route('/', methods=["POST"])
