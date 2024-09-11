@@ -54,3 +54,5 @@ Your response should be:
   "mileage_magnitude": "100000",
   "mileage_unit": "km"
 }
+
+Provide the response in the JSON format specified above without any additional text.
