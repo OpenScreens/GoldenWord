@@ -60,6 +60,7 @@ BRANCHES = {
     ]
 }
 
+# Function to get logit bias
 def get_logit_bias(branches):
     logit_bias = {}
     encoding = tiktoken.encoding_for_model("gpt-4")
@@ -71,7 +72,7 @@ def get_logit_bias(branches):
     logger.debug(f"Logit bias: {logit_bias}")
     return logit_bias
 
-
+# Function to add CORS headers
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST'
@@ -82,13 +83,14 @@ def add_cors_headers(response):
 def after_request(response):
     return add_cors_headers(response)
 
+# Chat.html route
 @app.route('/')
 def index():
 	with open("../chatpopup/chat.html") as f:
 		html = f.read()
 	return html
 
-
+# Function to call ChatGPT
 def call_chatgpt(prompt, messages, response_format=None, tokens=None, functions=None, function_call=None, model=None, logit_bias=True):
     if model is None:
         raise Exception("No model assigned for GPT")
@@ -119,49 +121,54 @@ def call_chatgpt(prompt, messages, response_format=None, tokens=None, functions=
     logger.debug(f"Call Chat GPT Response Details: {completion.choices[0].message.content}")
     return completion.choices[0].message
 
+# Function to load prompt from .txt file
 def load_prompt(filename):
     with open(os.path.join(APP_DIR, filename), 'r') as file:
         return file.read()
 
-@app.route("/reload", methods=["GET"])
-def reload_prompts():
-    global prompt_classify
-    prompt_classify = load_prompt('prompt_classify.txt')
-    return jsonify({"status": "Prompts reloaded successfully"}), 200
-
+# Function to classify prompt
 def classify_prompt(user_input):
     prompt_classify = load_prompt('prompt_classify.txt')
     response = call_chatgpt(prompt_classify, [user_input], model=PROMPT_CLASSIFY_MODEL, logit_bias=True)
     return response.content.strip().lower()
 
+# Function to answer generic prompt
 def answer_generic(user_input):
     prompt_generic = load_prompt("prompt_generic.txt")
     response = call_chatgpt(prompt_generic,[user_input], model=PROMPT_GENERIC_MODEL, logit_bias=False)
     return response.content.strip().lower()
 
+# Function to collect variables
 def collect_vars(user_input):
     prompt_collectvars = load_prompt("prompt_collectvars.txt")
     response = call_chatgpt(prompt_collectvars, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)
     return response.content.strip().lower()
 
+# Receive message route
 @app.route('/', methods=["POST"])
 def receive_msg():
+    # Extract user input and user ID from the incoming json
     data = request.json
     user_input = data.get('user_input')
     user_id = data.get('user_id')
     print (user_id)
 
+    # Check if user input or user ID is missing
     if not user_input or not user_id:
         response = jsonify({"error": "No user input or user ID provided"})
         return response, 400
 
+    # Initialize or update the conversation state for the user
     if user_id not in conversations:
         conversations[user_id] = {"state": "initial", "conversation": []}
 
     user_state = conversations[user_id]
+    # Add the userinput to the conversation history
     user_state['conversation'].append(user_input) 
 
+    # First Step
     if user_state["state"] == "initial":
+        # Classify the userinput to determine the category
         prompt_type = classify_prompt(user_input)
         user_state['state'] = 'classify'
         user_state['branch'] = prompt_type
@@ -171,11 +178,12 @@ def receive_msg():
     if user_state['state'] == "classify" or user_state['state'] == 'asking_missing_info':
         prompt_type = user_state['branch']
         
-        if prompt_type == "buying_price": ##perspectiva del usuario, el compra un auto es x aca
+        if prompt_type == "buying_price":
             user_state["state"] = "asking_details"
             return jsonify({"response": "Please provide the brand, model, and year of the car you are interested in (example: 'Toyota Corolla 2020')"}), 200
         
         elif prompt_type == "selling_price":
+            # Collect variables from userinput needed for selling price calculation
             json_response = collect_vars(" ".join(user_state['conversation']))
             print(json_response)
             car_details = json.loads(json_response)
@@ -187,6 +195,7 @@ def receive_msg():
             mileage_unit = car_details["mileage_unit"]
             print(brand, model, year, mileage_magnitude)
             
+            # Check for missing information
             missing_info = []
             for field, value in [("brand", brand), ("model", model), ("year", year), ("mileage", mileage_magnitude)]:
                 if value == "":
@@ -197,11 +206,14 @@ def receive_msg():
                 user_state['state'] = "asking_missing_info"
                 return jsonify({"response": f"Please provide the {missing_info_str}"}), 200
             
+            # Calculate and return the selling price
             brand, model, price, year, status = get_price(car_details["brand"].upper(), car_details["model"].upper(), int(car_details["year"]))
             
+            # Despreciation formula value according to the miles
             depreciation_factor = 1 - (0.05 * float(mileage_magnitude) / 100000)
             calculated_price = price * max(depreciation_factor, 0.1) * 3
             
+            # If there is price for the exact year entered or approximate or there is not price (See get_price)
             if status == 'exact':
                 response = f"Based on the details provided for your {brand} {model} ({car_details['year']}) with {mileage_magnitude} {mileage_unit}, we can provide an estimated selling price of {calculated_price}."
             elif status == 'approximate':
@@ -211,6 +223,7 @@ def receive_msg():
             user_state['state'] = 'initial'
             return jsonify({"response": response}), 200
         
+        # Other prompts types
         elif prompt_type == "loans":
             user_state['state'] = 'initial'
             return jsonify({"response": "We don't accept loans"}), 200
@@ -232,6 +245,7 @@ def receive_msg():
 
     elif user_state["state"] == "asking_details":
         try:
+            # Extract car details from user input
             brand, model, year = user_input.split()
             brand, model, price, year, status = get_price(brand.upper(), model.upper(), int(year))
             user_state["state"] = "initial"
@@ -241,6 +255,7 @@ def receive_msg():
     response = jsonify({"response": "An unexpected error occurred"})
     return response, 200
 
+# WhatsApp route
 @app.route("/whatsapp", methods=['GET', 'POST'])
 def whatsapp_reply():
     if request.method == 'GET':
@@ -296,7 +311,7 @@ def whatsapp_reply():
                     return ('Ok'), 200
         return jsonify({"status": "error", "message": "No message found"}), 200
  
-
+# Send Msg whatsapp function
 def send_msg_wpp(number, msg, message):
     url = "https://graph.facebook.com/v20.0/262736246918040/messages"
     payload = json.dumps({
@@ -320,12 +335,14 @@ def send_msg_wpp(number, msg, message):
 
     print(response.text)
 
+# Verify token facebook
 @app.route('/facebook', methods=['GET'])
 def verify():
     if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.verify_token') == WHATSAPP_VERIFY_TOKEN:
         return request.args.get('hub.challenge'), 200
     return 'Verificación fallida', 403
 
+#Facebook Route
 @app.route('/facebook', methods=['POST'])
 def webhook():
     data = request.get_json()
@@ -340,6 +357,7 @@ def webhook():
                         handle_message(sender_id, message_text)
     return "Evento recibido", 200
 
+# Handle msg facebook
 def handle_message(sender_id, msg_body):
     data = {
         "user_input": msg_body,
@@ -350,8 +368,8 @@ def handle_message(sender_id, msg_body):
     response_final = (response_data.get('response', 'An error occurred'))
     snd_msg_facebook(sender_id, response_final)
 
+# Send msg to facebook
 def snd_msg_facebook(recipient_id, message_text):
-    import requests
     url = 'https://graph.facebook.com/v11.0/me/messages'
     headers = {
         'Content-Type': 'application/json'
