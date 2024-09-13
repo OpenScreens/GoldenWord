@@ -15,7 +15,7 @@ Here are some examples to guide your classification:
 1. buying_price:
    - "I want to buy a Nissan March 2015, how much would that be?"
    - "What's the price of a 2018 Toyota Corolla?"
-   - "How much does a Honda Civic 2020 cost?"
+   - "How much is a Honda Civic 2020 worth?"
 
 2. selling_price:
    - "How much would you pay for a Nissan March 2015?"
