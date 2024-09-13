@@ -1,13 +1,11 @@
 BRANCHES = [
-  {"key":"buying_price",
-    "samples":[
+  {"key": "buying_price", "samples": [
       "I want to buy a Nissan March 2015, how much would that be?",
       "What's the price of a 2018 Toyota Corolla?",
       "How much does a Honda Civic 2020 cost?"
     ]
   },
-  {"key":"selling_price",
-    "samples":[
+  {"key": "selling_price", "samples": [
       "How much would you pay for a Nissan March 2015?",
       "What's the value of my 2016 Ford Focus if I sell it to you?",
       "I want to sell my Chevrolet Cruze 2017, what's your offer?",
@@ -15,39 +13,43 @@ BRANCHES = [
       "What's the price you'd give me for my vehicle?"
     ]
   },
-
-3. selling_process:
-   - "What's the process for selling a car?"
-   - "How do I go about selling my vehicle to your dealership?"
-   - "Can you explain the steps to sell my car?"
-
-4. buying_process:
-   - "What's the process for buying a car?"
-   - "How do I purchase a vehicle from your dealership?"
-   - "Can you walk me through the steps of buying a car?"
-
-5. selling_documents:
-   - "What documents are needed to sell a car to you?"
-   - "Which papers should I bring to sell my vehicle?"
-   - "Do I need any specific documentation to sell my car?"
-
-6. loans:
-   - "Do you offer loans?"
-   - "Can I get financing for a car purchase?"
-   - "What are your loan options for buying a vehicle?"
-
-7. generic:
-   - "What are your business hours?"
-   - "Do you have a physical location?"
-   - "Can you tell me about your dealership's history?"
+  {"key": "selling_process", "samples": [
+      "What's the process for selling a car?",
+      "How do I go about selling my vehicle to your dealership?",
+      "Can you explain the steps to sell my car?"
+    ]
+  },
+  {"key": "buying_process", "samples": [
+      "What's the process for buying a car?",
+      "How do I purchase a vehicle from your dealership?",
+      "Can you walk me through the steps of buying a car?"
+    ]
+  },
+  {"key": "selling_documents", "samples": [
+      "What documents are needed to sell a car to you?",
+      "Which papers should I bring to sell my vehicle?",
+      "Do I need any specific documentation to sell my car?"
+    ]
+  },
+  {"key": "loans", "samples": [
+      "Do you offer loans?",
+      "Can I get financing for a car purchase?",
+      "What are your loan options for buying a vehicle?"
+    ]
+  },
+  {"key": "generic", "samples": [
+      "What are your business hours?",
+      "Do you have a physical location?",
+      "Can you tell me about your dealership's history?"
+    ]
+  }
+]
 
 PROMPT1 = "You are an AI assistant tasked with classifying user prompts into specific categories related to car dealership operations. Your role is to analyze the user's input and determine which of the supported functions it most closely aligns with. The supported functions are:\n"
-#list of numbered valid prompt keys
+
 PROMPT2 = '''Please classify the user input into one of these categories.
 
 Here are some examples to guide your classification:\n'''
-
-# prompt keys + samples
 
 PROMPT3 = '''
 
@@ -58,9 +60,11 @@ When a user mentions a specific car model with year without stating intent to bu
 User input:'''
 
 KEYS = ""
-for i,qt in BRANCHES.enumerate():
-  KEYS= KEYS + str(i) + ". " qt["key"] + ":\n"
+SAMPLES = ""
+for i, qt in enumerate(BRANCHES):
+    KEYS += f"{i + 1}. {qt['key']}\n"
+    SAMPLES += f"{qt['key']}: {', '.join(qt['samples'])}\n"
 
-SAMPLES )
+def output_prompt():
+  return (PROMPT1 + KEYS + PROMPT2 + SAMPLES + PROMPT3)
 
-PROMPT = PROMPT1 + 

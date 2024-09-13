@@ -11,6 +11,7 @@ import tiktoken
 import requests
 import json
 from env import OPENAI_TOKEN, WHATSAPP_VERIFY_TOKEN, WPP_AUTH_TOKEN, FB_AUTH_TOKEN
+from prompt_classify import output_prompt
 
 app = flask.Flask(__name__)
 app.debug = True
@@ -128,8 +129,7 @@ def load_prompt(filename):
 
 # Function to classify prompt
 def classify_prompt(user_input):
-    prompt_classify = load_prompt('prompt_classify.txt')
-    response = call_chatgpt(prompt_classify, [user_input], model=PROMPT_CLASSIFY_MODEL, logit_bias=True)
+    response = call_chatgpt(output_prompt, [user_input], model=PROMPT_CLASSIFY_MODEL, logit_bias=True)
     return response.content.strip().lower()
 
 # Function to answer generic prompt
