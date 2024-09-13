@@ -129,7 +129,7 @@ def load_prompt(filename):
 
 # Function to classify prompt
 def classify_prompt(user_input):
-    response = call_chatgpt(output_prompt, [user_input], model=PROMPT_CLASSIFY_MODEL, logit_bias=True)
+    response = call_chatgpt(output_prompt(), [user_input], model=PROMPT_CLASSIFY_MODEL, logit_bias=True)
     return response.content.strip().lower()
 
 # Function to answer generic prompt
@@ -138,9 +138,17 @@ def answer_generic(user_input):
 
 # Function to collect variables
 def collect_vars(user_input):
-    prompt_collectvars = load_prompt("prompt_collectvars.txt")
-    response = call_chatgpt(prompt_collectvars, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)
-    return response.content.strip().lower()
+    prompt_make = load_prompt("prompt_make2.txt")
+    prompt_model = load_prompt("prompt_model.txt")
+    prompt_yearcar = load_prompt("prompt_yearcar.txt")
+    prompt_milleagevalue = load_prompt("prompt_milleagevalue.txt")
+    prompt_milleageunit = load_prompt("prompt_milleageunit.txt")
+    r1 = (call_chatgpt(prompt_make, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)).content.strip().lower()
+    r2 = (call_chatgpt(prompt_model, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)).content.strip().lower()
+    r3 = (call_chatgpt(prompt_yearcar, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)).content.strip().lower()
+    r4 = (call_chatgpt(prompt_milleagevalue, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)).content.strip().lower()
+    r5 = (call_chatgpt(prompt_milleageunit, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)).content.strip().lower()
+    return r1,r2,r3,r4,r5
 
 # Receive message route
 @app.route('/', methods=["POST"])
@@ -182,21 +190,13 @@ def receive_msg():
         
         elif prompt_type == "selling_price":
             # Collect variables from userinput needed for selling price calculation
-            json_response = collect_vars(" ".join(user_state['conversation']))
-            print(json_response)
-            car_details = json.loads(json_response)
-
-            brand = car_details["brand"]
-            model = car_details["model"]
-            year = car_details["year"]
-            mileage_magnitude = car_details["mileage_magnitude"]
-            mileage_unit = car_details["mileage_unit"]
-            print(brand, model, year, mileage_magnitude)
+            make,model,yearp,milleagevalue,millageunit = collect_vars(" ".join(user_state['conversation']))
+            print(make,model,yearp,milleagevalue,millageunit)
             
             # Check for missing information
             missing_info = []
-            for field, value in [("brand", brand), ("model", model), ("year", year), ("mileage", mileage_magnitude)]:
-                if value == "":
+            for field, value in [("make", make), ("model", model), ("year", yearp), ("mileage", milleagevalue), ("mileage unit", millageunit)]:
+                if value == '""':
                     missing_info.append(field)
             
             if missing_info:
@@ -205,19 +205,19 @@ def receive_msg():
                 return jsonify({"response": f"Please provide the {missing_info_str}"}), 200
             
             # Calculate and return the selling price
-            brand, model, price, year, status = get_price(car_details["brand"].upper(), car_details["model"].upper(), int(car_details["year"]))
+            brand, model, price, year, status = get_price(make.upper(), model.upper(), int(yearp))
             
             # Despreciation formula value according to the miles
-            depreciation_factor = 1 - (0.05 * float(mileage_magnitude) / 100000)
+            depreciation_factor = 1 - (0.05 * float(milleagevalue) / 100000)
             calculated_price = price * max(depreciation_factor, 0.1) * 3
             
             # If there is price for the exact year entered or approximate or there is not price (See get_price)
             if status == 'exact':
-                response = f"Based on the details provided for your {brand} {model} ({car_details['year']}) with {mileage_magnitude} {mileage_unit}, we can provide an estimated selling price of {calculated_price}."
+                response = f"Based on the details provided for your {brand} {model} ({yearp}) with {milleagevalue} {millageunit}, we can provide an estimated selling price of {calculated_price}."
             elif status == 'approximate':
-                response = f"We don't have the exact price for your {brand} {model} from {car_details['year']}, but we have a ({year}) and considering {mileage_magnitude} {mileage_unit}, we estimated a selling price of {calculated_price}."
+                response = f"We don't have the exact price for your {brand} {model} from {yearp}, but we have a ({year}) and considering {milleagevalue} {millageunit}, we estimated a selling price of {calculated_price}."
             elif status == 'no_price':
-                response = f"We don't have price available for your {brand} {model} ({car_details['year']}) with {mileage_magnitude} {mileage_unit}."
+                response = f"We don't have price available for your {brand} {model} ({yearp}) with {milleagevalue} {millageunit}."
             user_state['state'] = 'initial'
             return jsonify({"response": response}), 200
         
