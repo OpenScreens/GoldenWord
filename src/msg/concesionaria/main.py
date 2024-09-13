@@ -134,9 +134,7 @@ def classify_prompt(user_input):
 
 # Function to answer generic prompt
 def answer_generic(user_input):
-    prompt_generic = load_prompt("prompt_generic.txt")
-    response = call_chatgpt(prompt_generic,[user_input], model=PROMPT_GENERIC_MODEL, logit_bias=False)
-    return response.content.strip().lower()
+    return "I'm not trained to handle that question. Please contact +5491158918239"
 
 # Function to collect variables
 def collect_vars(user_input):
