@@ -1,0 +1,11 @@
+User input: "I want to sell a Volkswagen Gol 2015"
+Assistant output: "Volkswagen".
+
+User input: "Selling my Toyota Corolla from 2018 with 50.000 km"
+Your response should be: "Toyota".
+
+Input: "Honda Civic 2020 with 100,000 miles"
+Output: "Honda".
+
+input: "Ford Focus 2019 with 100k km"
+output: "Ford".
