@@ -1,7 +1,5 @@
-src/msg/concesionaria/concesionaria.log
-src/msg/concesionaria/__pycache__/
-src/msg/concesionaria/env.py
-src/msg/env.py
+concesionaria.log
+env.py
 src/msg/facebook.log
 src/msg/whatsapp.log
-src/msg/__pycache__/env.cpython-310.pyc
+__pycache__
