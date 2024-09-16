@@ -1,16 +1,14 @@
+import logging
 import flask
 from flask import request, jsonify
-from flask import json
 import requests
 import os
-import logging
 from openai import OpenAI
 import pandas as pd
 from buying_price import get_price
 import tiktoken
 import requests
-import json
-from env import OPENAI_TOKEN, WHATSAPP_VERIFY_TOKEN, WPP_AUTH_TOKEN, FB_AUTH_TOKEN
+from env import OPENAI_TOKEN
 from prompt_classify import output_prompt
 
 app = flask.Flask(__name__)
@@ -150,6 +148,14 @@ def collect_vars(user_input):
     r5 = (call_chatgpt(prompt_milleageunit, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)).content.strip().lower()
     return r1,r2,r3,r4,r5
 
+def send_response(user_id, response_message, url):
+    response_data = {
+        "user_id": user_id,
+        "response": response_message
+    }
+    response = requests.post(url, json=response_data)
+    return response.json(), response.status_code
+
 # Receive message route
 @app.route('/', methods=["POST"])
 def receive_msg():
@@ -157,6 +163,7 @@ def receive_msg():
     data = request.json
     user_input = data.get('user_input')
     user_id = data.get('user_id')
+    frontend_url = data.get('frontend_url')
     print (user_id)
 
     # Check if user input or user ID is missing
@@ -252,133 +259,6 @@ def receive_msg():
             return jsonify({"response": "Invalid input. Please provide the brand, model, and year separated by spaces."}), 400
     response = jsonify({"response": "An unexpected error occurred"})
     return response, 200
-
-# WhatsApp route
-@app.route("/whatsapp", methods=['GET', 'POST'])
-def whatsapp_reply():
-    if request.method == 'GET':
-        token_sent = request.args.get('hub.verify_token')
-        challenge = request.args.get('hub.challenge')
-        if token_sent == WHATSAPP_VERIFY_TOKEN:
-            return str(challenge)
-        return 'Token de verificación no válido', 403
-    elif request.method == 'POST':
-        incoming_data = request.get_json()
-        print(f"Data received: {incoming_data}")
-        logger.info(f"Data Incoming: {incoming_data}")
-        
-        if incoming_data and 'entry' in incoming_data:
-            entry = incoming_data['entry'][0]
-            changes = entry.get('changes', [])
-            if changes:
-                value = changes[0].get('value', {})
-                messages = value.get('messages', [])
-                if messages:
-                    message = messages[0]
-                    msg_body = message['text']['body']
-                    sender_id = message['from']
-                    sender_name = value['contacts'][0]['profile']['name']
-                    print(f"Mensaje recibido de {sender_name} ({sender_id}): {msg_body}")
-                    
-                    if msg_body and sender_id:
-                        data = {
-                            "user_input": msg_body,
-                            "user_id": sender_id
-                        }
-                        response = requests.post('http://localhost:5000/', json=data)
-                        response_data = response.json()
-                        response_final = (response_data.get('response', 'An error occurred'))
-                        try:
-                            sender_id = sender_id.replace("9","",1)
-                            send_msg_wpp(sender_id,response_final,message)
-
-                            headers = {
-                                'Authorization': f'Bearer {WPP_AUTH_TOKEN}',
-                                'Content-Type': 'application/json'
-                            }
-                            data = {
-                                "messaging_product": "whatsapp",
-                                "status": "read",
-                                "message_id": message['id'],
-                            }
-                            response = requests.post("https://graph.facebook.com/v20.0/262736246918040/messages", headers=headers, json=data)
-                        except Exception as e:
-                            print(e)
-                            return jsonify({"response": "An unexpected error occurred"}), 500
-                  
-                    return ('Ok'), 200
-        return jsonify({"status": "error", "message": "No message found"}), 200
- 
-# Send Msg whatsapp function
-def send_msg_wpp(number, msg, message):
-    url = "https://graph.facebook.com/v20.0/262736246918040/messages"
-    payload = json.dumps({
-        "messaging_product": "whatsapp",
-        "to": number,
-        "type": "text",
-        "text": {
-            "body": msg
-        },
-        "context": {
-          'message_id': message['id'],
-        },
-    })
-    
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {WPP_AUTH_TOKEN}'
-        }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-
-    print(response.text)
-
-# Verify token facebook
-@app.route('/facebook', methods=['GET'])
-def verify():
-    if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.verify_token') == WHATSAPP_VERIFY_TOKEN:
-        return request.args.get('hub.challenge'), 200
-    return 'Verificación fallida', 403
-
-#Facebook Route
-@app.route('/facebook', methods=['POST'])
-def webhook():
-    data = request.get_json()
-    print(data)
-    if 'entry' in data:
-        for entry in data['entry']:
-            if 'messaging' in entry:
-                for event in entry['messaging']:
-                    if 'message' in event:
-                        sender_id = event['sender']['id']
-                        message_text = event['message']['text']
-                        handle_message(sender_id, message_text)
-    return "Evento recibido", 200
-
-# Handle msg facebook
-def handle_message(sender_id, msg_body):
-    data = {
-        "user_input": msg_body,
-        "user_id": sender_id
-    }
-    response = requests.post('http://localhost:5000/', json=data)
-    response_data = response.json()
-    response_final = (response_data.get('response', 'An error occurred'))
-    snd_msg_facebook(sender_id, response_final)
-
-# Send msg to facebook
-def snd_msg_facebook(recipient_id, message_text):
-    url = 'https://graph.facebook.com/v11.0/me/messages'
-    headers = {
-        'Content-Type': 'application/json'
-    }
-    data = {
-        'recipient': {'id': recipient_id},
-        'message': {'text': message_text},
-        'access_token': FB_AUTH_TOKEN
-    }
-    response = requests.post(url, json=data, headers=headers)
-    print(f'Status: {response.status_code}, Response: {response.json()}')
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
