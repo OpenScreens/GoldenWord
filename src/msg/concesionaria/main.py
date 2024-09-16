@@ -9,7 +9,8 @@ from buying_price import get_price
 import tiktoken
 import requests
 from env import OPENAI_TOKEN
-from prompt_classify import output_prompt
+from prompt_classify import output_prompt, BRANCHES
+import threading
 
 app = flask.Flask(__name__)
 app.debug = True
@@ -32,41 +33,14 @@ PROMPT_COLLECTVARS_MODEL = 'gpt-4'
 client = OpenAI(api_key=OPENAI_TOKEN)
 session = requests.Session()
 
-BRANCHES = {
-    "buying_price": [
-        '"I want to buy a Nissan March 2015, how much would that be?"',
-        '"What is the price of a 2018 Toyota Corolla?"',
-        '"How much does a Honda Civic 2020 cost?"'
-    ],
-    "selling_price": [
-        '"What is the selling price of my 2018 Honda Civic?"',
-        '"I want to sell my honda civic 2008"'
-    ],
-    "selling_process": [
-        '"What documents do I need to sell my car?"'
-    ],
-    "buying_process": [
-        '"How do I buy a car?"'
-    ],
-    "selling_documents": [
-        '"What paperwork is required to sell a vehicle?"'
-    ],
-    "loans": [
-        '"Can I get a loan to buy a car?"'
-    ],
-    "generic": [
-        '"Tell me about car insurance."'
-    ]
-}
-
 # Function to get logit bias
 def get_logit_bias(branches):
     logit_bias = {}
     encoding = tiktoken.encoding_for_model("gpt-4")
-    for branch, sentences in branches.items():
-            tokens = encoding.encode(branch)
-            for token in tokens:
-                logit_bias[token] = 10
+    for i, qt in enumerate(branches):
+        tokens = encoding.encode(qt['key'])
+        for token in tokens:
+            logit_bias[token] = 10
    
     logger.debug(f"Logit bias: {logit_bias}")
     return logit_bias
@@ -134,19 +108,43 @@ def classify_prompt(user_input):
 def answer_generic(user_input):
     return "I'm not trained to handle that question. Please contact +5491158918239"
 
-# Function to collect variables
-def collect_vars(user_input):
+
+@app.route('/reload')
+def prompts():
+    global prompt_make, prompt_model, prompt_yearcar, prompt_milleagevalue, prompt_milleageunit
     prompt_make = load_prompt("prompt_make2.txt")
     prompt_model = load_prompt("prompt_model.txt")
     prompt_yearcar = load_prompt("prompt_yearcar.txt")
     prompt_milleagevalue = load_prompt("prompt_milleagevalue.txt")
     prompt_milleageunit = load_prompt("prompt_milleageunit.txt")
-    r1 = (call_chatgpt(prompt_make, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)).content.strip().lower()
-    r2 = (call_chatgpt(prompt_model, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)).content.strip().lower()
-    r3 = (call_chatgpt(prompt_yearcar, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)).content.strip().lower()
-    r4 = (call_chatgpt(prompt_milleagevalue, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)).content.strip().lower()
-    r5 = (call_chatgpt(prompt_milleageunit, [user_input], model=PROMPT_COLLECTVARS_MODEL,logit_bias=False)).content.strip().lower()
-    return r1,r2,r3,r4,r5
+
+prompts()
+
+# Function to collect variables
+def collect_vars(user_input):
+    # Cargar los prompts
+
+    results = [None] * 5
+
+    def call_gpt(index, prompt):
+        results[index] = (call_chatgpt(prompt, [user_input], model=PROMPT_COLLECTVARS_MODEL, logit_bias=False)).content.strip().lower()
+
+    threads = [
+        threading.Thread(target=call_gpt, args=(0, prompt_make)),
+        threading.Thread(target=call_gpt, args=(1, prompt_model)),
+        threading.Thread(target=call_gpt, args=(2, prompt_yearcar)),
+        threading.Thread(target=call_gpt, args=(3, prompt_milleagevalue)),
+        threading.Thread(target=call_gpt, args=(4, prompt_milleageunit)),
+    ]
+
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+    r1, r2, r3, r4, r5 = results
+    return r1, r2, r3, r4, r5
 
 def send_response(user_id, response_message, url):
     response_data = {
