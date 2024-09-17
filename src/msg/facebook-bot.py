@@ -38,12 +38,18 @@ def webhook():
 def handle_message(sender_id, msg_body):
     data = {
         "user_input": msg_body,
-        "user_id": sender_id
+        "user_id": sender_id,
+        "frontend_url": 'http://localhost:5002/response'
     }
-    response = requests.post(SERVERURL, json=data)
-    response_data = response.json()
-    response_final = (response_data.get('response', 'An error occurred'))
-    snd_msg_facebook(sender_id, response_final)
+    requests.post(SERVERURL, json=data)
+
+@app.route('/response', methods = ['POST'])
+def response():
+    data = request.json
+    response = data.get('response')
+    user_id = data.get('user_id')
+    snd_msg_facebook(user_id,response)
+    return ('Ok'), 200
 
 # Send msg to facebook
 def snd_msg_facebook(recipient_id, message_text):
