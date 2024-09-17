@@ -151,8 +151,7 @@ def send_response(user_id, response_message, url):
         "user_id": user_id,
         "response": response_message
     }
-    response = requests.post(url, json=response_data)
-    return response.json(), response.status_code
+    requests.post(url, json=response_data)
 
 # Receive message route
 @app.route('/', methods=["POST"])
@@ -207,7 +206,8 @@ def receive_msg():
             if missing_info:
                 missing_info_str = ", ".join(missing_info)
                 user_state['state'] = "asking_missing_info"
-                return jsonify({"response": f"Please provide the {missing_info_str}"}), 200
+                send_response(user_id,f"Please provide the {missing_info_str}",frontend_url)
+                return ('ok'), 200
             
             # Calculate and return the selling price
             brand, model, price, year, status = get_price(make.upper(), model.upper(), int(yearp))
@@ -224,27 +224,33 @@ def receive_msg():
             elif status == 'no_price':
                 response = f"We don't have price available for your {brand} {model} ({yearp}) with {milleagevalue} {millageunit}."
             user_state['state'] = 'initial'
-            return jsonify({"response": response}), 200
-        
+            
+            user_state['conversation'] = []
+            send_response(user_id,response,frontend_url)
+            return ('ok'), 200
+
         # Other prompts types
         elif prompt_type == "loans":
             user_state['state'] = 'initial'
-            return jsonify({"response": "We don't accept loans"}), 200
+            response = "We don't accept loans"
         elif prompt_type == "generic":
             user_state['state'] = 'initial'
             response = answer_generic(user_input)
-            return jsonify({"response":response})
         elif prompt_type == "selling_process":
             user_state['state'] = 'initial'
-            return jsonify({"response":"When selling a car, you need a few documents." +
-                             "First, the vehicle title or ownership document is essential as it proves you own the car."+
-                               "You'll also need a bill of sale, which outlines the sale terms, including price and date."})
+            response = ("When selling a car, you need a few documents. "
+                        "First, the vehicle title or ownership document is essential as it proves you own the car. "
+                        "You'll also need a bill of sale, which outlines the sale terms, including price and date.")
         elif prompt_type in ["selling_price", "buying_process"]:
             user_state['state'] = 'initial'
-            return jsonify({"response": f"We are working on {prompt_type}"}), 200
+            response = f"We are working on {prompt_type}"
         else:
             user_state['state'] = 'initial'
-            return jsonify({"response": "We don't understand your prompt"}), 200
+            response = "We don't understand your prompt"
+        
+        user_state['conversation'] = []
+        send_response(user_id,response,frontend_url)
+
 
     elif user_state["state"] == "asking_details":
         try:
