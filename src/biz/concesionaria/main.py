@@ -146,10 +146,11 @@ def collect_vars(user_input):
     r1, r2, r3, r4, r5 = results
     return r1, r2, r3, r4, r5
 
-def send_response(user_id, response_message, url):
+def send_response(user_id, response_message, url, messageid):
     response_data = {
         "user_id": user_id,
-        "response": response_message
+        "response": response_message,
+        "message_id": messageid
     }
     requests.post(url, json=response_data)
 
@@ -161,7 +162,8 @@ def receive_msg():
     user_input = data.get('user_input')
     user_id = data.get('user_id')
     frontend_url = data.get('frontend_url')
-    print (user_id)
+    message_id = data.get('message_id',None)
+    print (data)
 
     # Check if user input or user ID is missing
     if not user_input or not user_id:
@@ -206,7 +208,7 @@ def receive_msg():
             if missing_info:
                 missing_info_str = ", ".join(missing_info)
                 user_state['state'] = "asking_missing_info"
-                send_response(user_id,f"Please provide the {missing_info_str}",frontend_url)
+                send_response(user_id,f"Please provide the {missing_info_str}",frontend_url, message_id)
                 return ('ok'), 200
             
             # Calculate and return the selling price
@@ -226,7 +228,7 @@ def receive_msg():
             user_state['state'] = 'initial'
             
             user_state['conversation'] = []
-            send_response(user_id,response,frontend_url)
+            send_response(user_id,response,frontend_url, message_id)
             return ('ok'), 200
 
         # Other prompts types
@@ -249,7 +251,7 @@ def receive_msg():
             response = "We don't understand your prompt"
         
         user_state['conversation'] = []
-        send_response(user_id,response,frontend_url)
+        send_response(user_id,response,frontend_url, message_id)
 
 
     elif user_state["state"] == "asking_details":

@@ -13,7 +13,8 @@ logger.setLevel(logging.DEBUG)
 file_handler = logging.FileHandler(APP_DIR+'/whatsapp.log')
 logger.addHandler(file_handler)
 
-urlwpp = "https://graph.facebook.com/v20.0/262736246918040/messages"
+numberwpp = '441332039057348'
+urlwpp = f"https://graph.facebook.com/v20.0/{numberwpp}/messages"
 
 # WhatsApp route
 @app.route("/whatsapp", methods=['GET'])
@@ -44,23 +45,27 @@ def whatsapp_post():
                 print(f"Mensaje recibido de {sender_name} ({sender_id}): {msg_body}")
                 
                 if msg_body and sender_id:
+                    sender_id = sender_id.replace("9","",1)
+
                     data = {
                         "user_input": msg_body,
-                        "user_id": sender_id
+                        "user_id": sender_id,
+                        "frontend_url": 'http://localhost:5001/response',
+                        "message_id": message['id']
                     }
-                    response = requests.post(SERVERURL, json=data)
-                    response_data = response.json()
-                    response_final = (response_data.get('response', 'An error occurred'))
-                    try:
-                        sender_id = sender_id.replace("9","",1)
-                        send_msg_wpp(sender_id,response_final,message)
-
-                    except Exception as e:
-                        print(e)
-                        return jsonify({"response": "An unexpected error occurred"}), 500
-                
+                    requests.post(SERVERURL, json=data)                
                 return ('Ok'), 200
     return jsonify({"status": "error", "message": "No message found"}), 200
+
+@app.route('/response', methods = ['POST'])
+def response():
+    data = request.json
+    response = data.get('response')
+    number = data.get('user_id')
+    message_id = data.get('message_id')
+    print (data)
+    send_msg_wpp(number,response, message_id)
+    return ('Ok'), 200
  
 # Send Msg whatsapp function
 def send_msg_wpp(number, msg, message):
@@ -71,9 +76,9 @@ def send_msg_wpp(number, msg, message):
         "text": {
             "body": msg
         },
-        "context": {
-          'message_id': message['id'],
-        },
+        # "context": {
+        #   'message_id': message,
+        # },
     })
     
     headers = {
@@ -86,7 +91,7 @@ def send_msg_wpp(number, msg, message):
     data = {
         "messaging_product": "whatsapp",
         "status": "read",
-        "message_id": message['id'],
+        "message_id": message,
     }
     response = requests.post(urlwpp, headers=headers, json=data)
 
