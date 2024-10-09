@@ -59,7 +59,7 @@ def after_request(response):
 # Chat.html route
 @app.route('/')
 def index():
-	with open("../chatpopup/chat.html") as f:
+	with open("../../msg/chatpopup/chat.html") as f:
 		html = f.read()
 	return html
 
